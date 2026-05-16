@@ -1,6 +1,6 @@
 # Contributing
 
-This repo packages [Hello World](https://github.com/Start9Labs/hello-world) for StartOS. It also doubles as the recommended starting template for new service packages — keep changes minimal and idiomatic.
+This repo packages [Blossom Server](https://github.com/hzrd149/blossom-server) for StartOS.
 
 ## Documentation — keep it in sync
 
@@ -22,12 +22,13 @@ make      # build the universal .s9pk
 
 ## Updating the upstream version
 
-Hello World runs the `ghcr.io/start9labs/hello-world` image. To track a new upstream release:
+Blossom Server runs the `ghcr.io/hzrd149/blossom-server` image. To track a new upstream release:
 
-1. Bump `dockerTag` in `startos/manifest/index.ts` to `ghcr.io/start9labs/hello-world:<new version>`.
+1. Bump `dockerTag` in `startos/manifest/index.ts` to `ghcr.io/hzrd149/blossom-server:<new version>`.
 2. Update `version` and `releaseNotes` in the file under `startos/versions/`, renaming it to the new version string. A *new* version file is only needed when the bump carries an `up`/`down` migration, or when you want the old release notes preserved in git history — see [Versions](https://docs.start9.com/packaging/versions.html).
-3. Rebuild (`make`), sideload the `.s9pk`, and confirm it starts.
-4. Review `README.md` and `instructions.md` for anything the bump changed.
+3. If the upstream `config.yml` schema gained or removed fields you expose via actions, update `startos/fileModels/config.yml.ts` accordingly.
+4. Rebuild (`make`), sideload the `.s9pk`, and confirm it starts and the daemon health check passes.
+5. Review `README.md` and `instructions.md` for anything the bump changed.
 
 ## How to contribute
 
