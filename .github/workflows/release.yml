@@ -18,8 +18,11 @@ jobs:
       - name: Setup build environment
         uses: start9labs/shared-workflows/.github/actions/setup-build-env@master
 
-      - name: Generate ephemeral developer signing key
-        run: start-cli init-key
+      - name: Install developer signing key
+        run: |
+          mkdir -p ~/.startos
+          printf '%s' "${{ secrets.DEV_KEY }}" > ~/.startos/developer.key.pem
+          chmod 600 ~/.startos/developer.key.pem
 
       - name: Build .s9pk packages
         run: |
