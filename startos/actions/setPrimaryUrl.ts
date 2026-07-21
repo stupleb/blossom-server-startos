@@ -28,7 +28,7 @@ export const setPrimaryUrl = sdk.Action.withInput(
   async () => ({
     name: i18n('Set Public Domain'),
     description: i18n(
-      'Choose which of this server\'s hostnames is canonical. Blob URLs returned to clients will use this hostname, and Nostr auth events will be validated against it.',
+      "Choose which of this server's hostnames is canonical. Blob URLs returned to clients will use this hostname, and Nostr auth events will be validated against it.",
     ),
     warning: null,
     allowedStatuses: 'any',

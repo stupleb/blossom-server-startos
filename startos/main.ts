@@ -38,7 +38,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       type: 'file',
     })
 
-  const sub = await sdk.SubContainer.of(
+  const sub = sdk.SubContainer.of(
     effects,
     { imageId: 'blossom-server' },
     mounts,

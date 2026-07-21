@@ -1,6 +1,5 @@
 export const short = {
-  en_US:
-    'Content-addressed blob storage server for the Nostr Blossom protocol',
+  en_US: 'Content-addressed blob storage server for the Nostr Blossom protocol',
   es_ES:
     'Servidor de almacenamiento de blobs direccionado por contenido para el protocolo Nostr Blossom',
   de_DE:
@@ -21,5 +20,5 @@ export const long = {
   pl_PL:
     'Blossom Server to serwer pamięci blob uwierzytelniany przez Nostr. Klienci wysyłają pliki i pobierają je po haszu SHA-256, a retencja jest regulowana konfigurowalnymi regułami typu MIME. Uwierzytelnianie odbywa się przez zdarzenia podpisane przez Nostr (kind 24242); brak tradycyjnych kont użytkowników. Zawiera wbudowany panel administracyjny do zarządzania blobami, użytkownikami i raportami.',
   fr_FR:
-    'Blossom Server est un serveur de stockage de blobs authentifié par Nostr. Les clients téléversent des fichiers et les récupèrent par leur hash SHA-256, avec une rétention régie par des règles configurables par type MIME. L\'authentification se fait via des évènements signés par Nostr (kind 24242) ; pas de comptes utilisateur traditionnels. Inclut un tableau de bord d\'administration intégré pour gérer les blobs, utilisateurs et signalements.',
+    "Blossom Server est un serveur de stockage de blobs authentifié par Nostr. Les clients téléversent des fichiers et les récupèrent par leur hash SHA-256, avec une rétention régie par des règles configurables par type MIME. L'authentification se fait via des évènements signés par Nostr (kind 24242) ; pas de comptes utilisateur traditionnels. Inclut un tableau de bord d'administration intégré pour gérer les blobs, utilisateurs et signalements.",
 }
