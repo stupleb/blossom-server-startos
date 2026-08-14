@@ -77,7 +77,7 @@ There is no separate setup wizard. Once those tasks are done, the service is ful
 | StartOS-Managed (via actions or locked)                              | Upstream-Managed                              |
 | -------------------------------------------------------------------- | --------------------------------------------- |
 | `publicDomain`, `dashboard.username`/`password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule` | Per-blob deletion, per-user deletion, report review (all done in the upstream `/admin` dashboard) |
-| Locked values: `port: 3000`, `host: 0.0.0.0`, `storage.backend: local`, `storage.local.dir`, `database.path`, `dashboard.enabled: true`, `landing.enabled: true` | Media (BUD-05) image and video optimisation defaults, prune timing, Nostr lookup relays — edit `config.yml` directly via the StartOS file viewer if you need to change them |
+| Locked values: `port: 3000`, `host: 0.0.0.0`, `storage.backend: local`, `storage.local.dir`, `database.path`, `dashboard.enabled: true`, `landing.enabled: true` | Media (BUD-05) image and video optimisation defaults, thumbnail generation settings (`media.thumbnail`, 6.2.0+), prune timing, Nostr lookup relays — edit `config.yml` directly via the StartOS file viewer if you need to change them |
 
 The on-disk `config.yml` is the single source of truth. StartOS actions write to it; the daemon restarts on every change. Keys outside the StartOS schema are preserved untouched.
 
@@ -152,8 +152,8 @@ None. Blossom Server is fully standalone.
 
 - All BUD endpoints (`/upload`, `/mirror`, `/media`, `/list`, `/report`, `GET/HEAD /:sha256`, `DELETE /:sha256`) behave exactly as upstream documents.
 - Nostr authentication (BUD-11, kind 24242 events) is unchanged.
-- The automatic prune loop and retention rule semantics are unchanged.
-- Image optimisation (sharp) and video transcoding (ffmpeg) defaults are unchanged.
+- The automatic prune loop and retention rule semantics are unchanged. Thumbnails (6.2.0+) are excluded from both expiry rules and ownerless cleanup and are deleted only alongside their parent blob — verified against the upstream prune queries.
+- Image optimisation (sharp) and video transcoding (ffmpeg) defaults are unchanged, as are NIP-94 metadata tags and automatic media thumbnails (both added upstream in 6.2.0; thumbnail settings live under `media.thumbnail` in `config.yml`).
 - The landing page and admin dashboard UI are upstream's, unmodified.
 - The SQLite schema is upstream's.
 

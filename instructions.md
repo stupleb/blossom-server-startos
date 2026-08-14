@@ -13,7 +13,7 @@ Blossom Server is a content-addressed blob storage server for the Nostr Blossom 
 - **A Nostr-authenticated blob server** reachable at `/` over every enabled StartOS gateway.
 - **An admin dashboard** at `/admin` for browsing blobs, managing users, and reviewing flagged content.
 - **An automatic prune loop** that deletes expired blobs according to configurable retention rules.
-- **Image + video optimisation** via the BUD-05 `/media` endpoint (ffmpeg and sharp included in the image).
+- **Image + video optimisation** via the BUD-05 `/media` endpoint (ffmpeg and sharp included in the image). Media uploads also get automatic best-effort thumbnails, returned to clients as NIP-94 `thumb` tags.
 
 ## Getting set up
 
@@ -42,6 +42,6 @@ Behavior varies by client, so test yours before committing to a setup.
 
 ## Limitations
 
-- **No total-storage cap** — Blossom doesn't have a "stop when full" knob. Watch your disk usage in the StartOS dashboard, and use **Edit Retention Rules** to keep storage bounded.
+- **No total-storage cap** — Blossom doesn't have a "stop when full" knob. Watch your disk usage in the StartOS dashboard, and use **Set Retention Periods** to keep storage bounded.
 - **Storage backend is locked to local filesystem** — S3 is not exposed.
 - **Per-blob management lives in the upstream dashboard**, not in StartOS actions. To delete a specific blob, ban a pubkey, or review reports, use `/admin`.
