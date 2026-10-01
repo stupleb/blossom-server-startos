@@ -127,3 +127,20 @@ export const configYaml = FileHelper.yaml(
 )
 
 export type StorageRule = z.infer<typeof ruleShape>
+
+export const allowlistOf = (rules: StorageRule[]) =>
+  rules.find((r) => r.pubkeys?.length)?.pubkeys ?? []
+
+export const expirationIn = (rules: StorageRule[]) => (cat: RuleCategory) =>
+  rules.find((r) => r.type === cat)?.expiration ?? '1 week'
+
+// upstream skips a rule that lists pubkeys for every other key, at upload and at prune, so the allowlist gets a rule of its own
+export const rulesOf = (
+  expirationOf: (cat: RuleCategory) => string,
+  pubkeys: string[],
+) => [
+  ...RULE_CATEGORIES.map((type) => ({ type, expiration: expirationOf(type) })),
+  ...(pubkeys.length
+    ? [{ type: '*', expiration: expirationOf('*'), pubkeys }]
+    : []),
+]

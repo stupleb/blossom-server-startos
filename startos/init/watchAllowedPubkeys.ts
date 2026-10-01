@@ -17,5 +17,7 @@ export const watchAllowedPubkeys = sdk.setupOnInit(async (effects) => {
         'Add at least one allowed pubkey before anyone can upload — Private Mode is on but the allowlist is empty.',
       ),
     })
+  } else {
+    await sdk.action.clearTask(effects, 'blossom-server:set-allowed-pubkeys')
   }
 })

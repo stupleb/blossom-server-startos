@@ -38,11 +38,12 @@ const dict = {
   // togglePrivateMode
   'Enable Private Mode': 40,
   'Disable Private Mode': 41,
-  'Private mode is currently ON — only the pubkeys in your allowlist may upload. Run this action to allow any authenticated pubkey.': 42,
+  'Private mode is currently ON — only the pubkeys in your allowlist may upload. Run this action to allow any authenticated pubkey. Your allowlist is kept for when you turn Private Mode back on.': 42,
   'Private mode is currently OFF — any authenticated Nostr pubkey may upload. Run this action to restrict uploads to your allowlist.': 43,
   'Private mode is currently OFF. To enable it, first add at least one pubkey via "Manage Allowed Pubkeys" — otherwise nobody will be able to upload.': 44,
   'The allowed-pubkeys list is empty. Enabling Private Mode now will lock out every uploader. Add pubkeys first via "Manage Allowed Pubkeys".': 45,
   'Cannot enable Private Mode: the allowed-pubkeys list is empty. Add at least one pubkey via "Manage Allowed Pubkeys" first.': 46,
+  'Anyone who can reach this server will be able to upload files to it.': 47,
 
   // toggleOwnerlessCleanup
   'Enable Ownerless Cleanup': 50,
