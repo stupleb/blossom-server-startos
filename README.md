@@ -4,14 +4,12 @@
 
 # Blossom Server on StartOS
 
-> **Upstream repo:** <https://github.com/hzrd149/blossom-server>
-> **Blossom protocol:** <https://github.com/hzrd149/blossom>
->
 > Everything not listed in this document should behave the same as upstream
 > Blossom Server. If a feature, setting, or behavior is not mentioned here,
-> the upstream documentation is accurate and fully applicable.
+> the upstream documentation is accurate and fully applicable — see the
+> Documentation section of `instructions.md` for links.
 
-Blossom Server is a content-addressed blob storage server for the Nostr Blossom protocol. Clients upload files via HTTP and retrieve them by SHA-256 hash. Authentication is Nostr-signed events (kind 24242, BUD-11) — there are no traditional user accounts. Retention is governed by configurable MIME-type rules that double as an upload allowlist.
+[Blossom Server](https://github.com/hzrd149/blossom-server) stores files for Nostr clients and serves them back by SHA-256 hash. Uploads are authorized by Nostr-signed events instead of user accounts. This package runs upstream's published image and manages its `config.yml` through StartOS actions.
 
 ---
 
@@ -19,153 +17,133 @@ Blossom Server is a content-addressed blob storage server for the Nostr Blossom 
 
 - [Image and Container Runtime](#image-and-container-runtime)
 - [Volume and Data Layout](#volume-and-data-layout)
-- [Installation and First-Run Flow](#installation-and-first-run-flow)
-- [Configuration Management](#configuration-management)
-- [Network Access and Interfaces](#network-access-and-interfaces)
-- [Actions (StartOS UI)](#actions-startos-ui)
-- [Backups and Restore](#backups-and-restore)
-- [Health Checks](#health-checks)
+- [File Models](#file-models)
 - [Dependencies](#dependencies)
+- [Network Access and Interfaces](#network-access-and-interfaces)
+- [Installation and First-Run Flow](#installation-and-first-run-flow)
+- [Actions](#actions)
+- [Tasks](#tasks)
+- [Health Checks](#health-checks)
+- [Backups and Restore](#backups-and-restore)
 - [Limitations and Differences](#limitations-and-differences)
-- [What Is Unchanged from Upstream](#what-is-unchanged-from-upstream)
-- [Contributing](#contributing)
 - [Quick Reference for AI Consumers](#quick-reference-for-ai-consumers)
 
 ---
 
 ## Image and Container Runtime
 
-| Property      | Value                                  |
-| ------------- | -------------------------------------- |
-| Image         | `ghcr.io/hzrd149/blossom-server`       |
-| Architectures | x86_64, aarch64                        |
-| Entrypoint    | Upstream default, passed the path to the StartOS-managed `config.yml` |
+The package runs upstream's published image, unmodified, in one subcontainer.
 
-The image ships with `ffmpeg` and `sharp` so the BUD-05 media optimisation endpoint works out of the box.
+| Property      | Value                                                                          |
+| ------------- | ------------------------------------------------------------------------------ |
+| Image         | `ghcr.io/hzrd149/blossom-server`, as upstream publishes it                     |
+| Architectures | x86_64, aarch64                                                                |
+| Entrypoint    | Upstream's, given the path of the StartOS-managed `config.yml` as its argument |
+| Subcontainer  | `blossom-sub`                                                                  |
 
----
+`blossom-sub` runs two things in order: a one-shot `chown` that gives the data directory to the image's `deno` user, then the server itself (daemon id `primary`).
 
 ## Volume and Data Layout
 
-| Path on volume      | Mount point in container | Purpose                                  |
-| ------------------- | ------------------------ | ---------------------------------------- |
-| `data/blobs/`       | `/app/data/blobs`        | Content-addressed blob files             |
-| `data/sqlite.db`    | `/app/data/sqlite.db`    | Blob metadata, owners, reports           |
-| `data/media-tmp/`   | `/app/data/media-tmp`    | Temporary files from media optimisation and thumbnail generation, before they are committed to `blobs/` |
-| `config.yml`        | `/app/config.yml`        | StartOS-managed Blossom config (read-only in the container) |
+All state is on one volume, `main`. The container sees two parts of it.
 
-All data lives in the single `main` volume — backup is atomic.
+| Path on `main` | In the container             | Holds                                                                                                                                                                                                             |
+| -------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data/`        | `/app/data`, read-write      | `blobs/`, the stored files, named by hash; `sqlite.db`, the record of blobs, owners and reports, with SQLite's `-wal` and `-shm` files beside it; `media-tmp/`, work files of media optimisation and thumbnailing |
+| `config.yml`   | `/app/config.yml`, read-only | The server's configuration                                                                                                                                                                                        |
 
----
+## File Models
 
-## Installation and First-Run Flow
+The package owns one file: upstream's own `config.yml`. It keeps no separate store of StartOS-side state and passes no setting by environment variable.
 
-On install, StartOS:
+`config.yml` is YAML at the root of `main`.
 
-1. Seeds `config.yml` with safe defaults (port 3000, local storage, admin dashboard on, media endpoint on, list endpoint off, default retention rules, **Private Mode on**).
-2. Picks a sensible default for `publicDomain` (prefers `*.local`).
-3. Creates **three critical tasks** that you must complete before the server is usable:
-   - **Set Admin Password** — the admin dashboard at `/admin` is locked until this runs.
-   - **Set Public Domain** — only surfaced if no `.local` hostname was auto-pickable.
-   - **Manage Allowed Pubkeys** — Private Mode is on by default, so until you add at least one Nostr pubkey to the allowlist **nobody can upload**, including you. The task is raised whenever Private Mode is on with an empty allowlist, and cleared when a pubkey is added or Private Mode is turned off.
-
-There is no separate setup wizard. Once those tasks are done, the service is fully operational. Allowing public uploads (any authenticated pubkey) requires explicitly running the **Disable Private Mode** action.
-
----
-
-## Configuration Management
-
-| StartOS-Managed (via actions or locked)                              | Upstream-Managed                              |
-| -------------------------------------------------------------------- | --------------------------------------------- |
-| `publicDomain`, `dashboard.username`/`password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule`, `media.requirePubkeyInRule` | Per-blob deletion, per-user deletion, report review (all done in the upstream `/admin` dashboard) |
-| Locked values: `port: 3000`, `host: 0.0.0.0`, `storage.backend: local`, `storage.local.dir`, `database.path`, `dashboard.enabled: true`, `landing.enabled: true` | Media (BUD-05) image and video optimisation defaults, thumbnail generation settings (`media.thumbnail`), prune timing, Nostr lookup relays — edit `config.yml` directly via the StartOS file viewer if you need to change them |
-
-The on-disk `config.yml` is the single source of truth. StartOS actions write to it; the daemon restarts on every change. Keys outside the StartOS schema are preserved untouched.
-
-`storage.rules` holds the four retention rules, which never list pubkeys, followed by one `*` rule that carries the allowlist. Upstream consults that last rule only while `requirePubkeyInRule` is on, so the allowlist stays in place when Private Mode is off, and the retention periods apply to every blob, whoever uploaded it.
-
----
-
-## Network Access and Interfaces
-
-A single HTTP listener on port 3000 carries both interfaces:
-
-| Interface       | Path     | Purpose                                                  |
-| --------------- | -------- | -------------------------------------------------------- |
-| Blossom Server  | `/`      | Public Blossom endpoint (BUD-01/02/04/05/06/08/09/11)    |
-| Admin Dashboard | `/admin` | Operator console — Basic Auth, credentials set via action |
-
-Both are exposed via every enabled StartOS gateway (LAN IP, `.local`, clearnet domain, StartTunnel, custom domains).
-
----
-
-## Actions (StartOS UI)
-
-| Action                       | Purpose                                                                                                | Inputs                                          |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| Show Admin Credentials       | Display the current dashboard username and password.                                                   | None                                            |
-| Set Admin Password           | Generate a new 32-char random password for the dashboard. Replaces the existing one.                   | None                                            |
-| Set Public Domain            | Choose which of your service hostnames is canonical. Used in blob descriptor URLs and BUD-11 validation. | Hostname (select from available)               |
-| Set Retention Periods        | Per-category expiration: Images (`image/*`), Videos (`video/*`), Audio (`audio/*`), Other (`*`).        | Four duration strings (e.g. "1 month")          |
-| Manage Allowed Pubkeys       | Hex-encoded Nostr pubkeys allowed to upload when Private Mode is on. The list is kept, but not applied, while Private Mode is off. | List of hex pubkeys (64 chars)                 |
-| Set Max Upload Size          | Change the maximum accepted blob size.                                                                 | Number (MB)                                     |
-| Enable / Disable Private Mode | Toggle `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together, so the allowlist governs `/upload`, `/mirror` and `/media` alike. With both off, any authenticated pubkey may upload; the allowlist is left in place for the next time Private Mode is enabled. Refuses to enable when the allowlist is empty. | None                                            |
-| Enable / Disable Ownerless Cleanup | Toggle `storage.removeWhenNoOwners` — delete blobs with no remaining owners on every prune cycle. | None                                            |
-
-For per-blob operations (delete a specific blob, ban a pubkey, dismiss a report), use the upstream admin dashboard at `/admin`.
-
----
-
-## Backups and Restore
-
-**Included:** the `main` volume, which holds `data/blobs/`, `data/sqlite.db`, and `config.yml`. SQLite is checkpointed atomically with the file copy.
-
-**Excluded:** nothing — there is no external state.
-
-**Restore behavior:** the volume is restored before the daemon starts. The previous `publicDomain` and admin password are restored as-is. If the previous `publicDomain` is no longer a valid hostname (e.g., restored on a different StartOS box), a critical task prompts you to pick a new one.
-
----
-
-## Health Checks
-
-| Check          | Method                  | Messages                                                                |
-| -------------- | ----------------------- | ----------------------------------------------------------------------- |
-| Blossom Server | Port listening on 3000  | Success: "Blossom Server is ready" / Error: "Blossom Server is not ready" |
-
----
+- **How it is seeded.** Every init (install, update, restore, container rebuild) merges the package's defaults into the file: a missing key gets its default, a value of the wrong type is replaced by its default, and everything else is left as found. Keys the package has no model for are kept as they are.
+- **Re-asserted on every init.** `host` (`0.0.0.0`), `port` (`3000`), `database.path`, `storage.backend` (`local`), `storage.local.dir`, `landing.enabled` (`true`) and `dashboard.enabled` (`true`). A hand edit to any of these reverts.
+- **Written by actions.** `publicDomain`, `dashboard.password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule` and `media.requirePubkeyInRule`. A hand edit survives until the matching action next runs. `publicDomain` is also filled in by the package whenever it is empty.
+- **Seeded once, then the operator's.** Everything else. A hand edit survives.
+- **How `storage.rules` is laid out.** Four retention rules (`image/*`, `video/*`, `audio/*`, `*`) that never list pubkeys, followed, when the allowlist is not empty, by one more `*` rule that carries it. Upstream consults that last rule only while `requirePubkeyInRule` is on, so the allowlist stays in the file when Private Mode is off, and the retention periods apply to every blob, whoever uploaded it. Set Retention Periods and Manage Allowed Pubkeys each rewrite the whole list to this layout, so a rule added by hand is dropped the next time either runs.
+- **Where the defaults differ from upstream's.** `upload.requirePubkeyInRule` starts `true` (Private Mode), `media.enabled` starts `true`, and the default rules add one for `audio/*`. Upstream generates and logs a dashboard password when `dashboard.password` is empty; here the service is held on a task until one is set, so that never happens.
+- **When a change takes effect.** The server reads the file at startup. An action that changes it restarts the server; after a hand edit, restart the service.
 
 ## Dependencies
 
-None. Blossom Server is fully standalone.
+None. The server needs no other service.
 
----
+## Network Access and Interfaces
+
+One HTTP listener on port 3000 serves both interfaces, so they always have the same addresses.
+
+| Interface id | Type | Port | Path     | Serves                                                                    |
+| ------------ | ---- | ---- | -------- | ------------------------------------------------------------------------- |
+| `primary`    | `ui` | 3000 | `/`      | The Blossom endpoints that Nostr clients use, and upstream's landing page |
+| `admin`      | `ui` | 3000 | `/admin` | Upstream's admin dashboard, behind HTTP Basic Auth                        |
+
+`publicDomain` in `config.yml` names one of those addresses, port included where the address has one. The server builds every blob URL it returns from it, and refuses a Nostr auth event whose `server` tag names a different host with `401 Auth token not valid for this server`.
+
+## Installation and First-Run Flow
+
+Upstream has no setup wizard: it reads `config.yml` and starts. The package writes that file at install and holds the service on tasks until the operator has made the choices upstream leaves to hand-editing.
+
+1. `config.yml` is seeded with Private Mode on, the media endpoint on, and the dashboard on.
+2. `publicDomain` is filled in with the first address StartOS reports for the `primary` interface.
+3. Tasks are raised for what is still missing: on a fresh install, an admin password and an allowlist. See [Tasks](#tasks).
+
+The service does not start while a critical task is pending. Disable Private Mode can be run in place of adding an allowlist; it withdraws that task.
+
+## Actions
+
+The package has eight actions, all user-facing, all runnable whether the service is running or stopped. Every one except Show Admin Credentials changes `config.yml` and so restarts the server once.
+
+- **Set Admin Password** (`set-admin-password`): run it at first setup, where it is a task, or to rotate the dashboard password. It writes a new random password to `dashboard.password` and returns it with the username. The previous password stops working, and every run produces a different one.
+- **Show Admin Credentials** (`show-admin-credentials`): returns the current dashboard username and password. Read-only and repeatable.
+- **Set Public Domain** (`set-primary-url`): run it when the address clients use changes, when uploads fail with `401 Auth token not valid for this server`, or when returned blob URLs point somewhere clients cannot reach. It writes the chosen address to `publicDomain`; the choices are the interface's current addresses. URLs already handed out keep the old address. Choosing the address already set changes nothing and restarts nothing.
+- **Set Retention Periods** (`set-retention-periods`): sets how long a blob is kept after it was last accessed, per category. It rewrites `storage.rules`, keeping the allowlist. A shorter period also applies to blobs already stored: any that are past it are deleted at the next prune cycle. Repeatable.
+- **Manage Allowed Pubkeys** (`set-allowed-pubkeys`): sets which Nostr keys may upload while Private Mode is on. It rewrites `storage.rules`, keeping the retention periods. The list can be edited while Private Mode is off and takes effect when Private Mode is turned on. Emptying it while Private Mode is on leaves a server nobody can upload to and raises the allowlist task. Repeatable.
+- **Set Max Upload Size** (`set-upload-limit`): writes `upload.maxSize`, the limit for `/upload` and `/mirror`. The media endpoint has its own limit, `media.maxSize`, which no action changes. Repeatable.
+- **Enable / Disable Private Mode** (`toggle-private-mode`): one action whose name follows the current state. It flips `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together and leaves the allowlist where it is. Off, any Nostr key may upload; on, only keys on the allowlist. Enabling is refused while the allowlist is empty. Blobs already stored are not touched either way. Each run flips the state, so running it twice returns to where it started.
+- **Enable / Disable Ownerless Cleanup** (`toggle-ownerless-cleanup`): flips `storage.removeWhenNoOwners`. On, a blob that no key owns any longer is deleted at the next prune cycle, whatever its retention period. Each run flips the state.
+
+Deleting one blob, banning a key and reviewing reports are done in upstream's dashboard at `/admin`, not by actions.
+
+## Tasks
+
+The package raises three tasks, all critical: the service will not start while one is pending.
+
+| Task                   | Raised when                                                                                                                                  | Cleared when                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Set Admin Password     | `dashboard.password` is empty, as on every fresh install                                                                                     | The action runs                                                                       |
+| Manage Allowed Pubkeys | Private Mode is on and the allowlist is empty: on every fresh install, and again if the list is emptied while Private Mode is on             | The action runs, a key is added, or Private Mode is turned off                        |
+| Set Public Domain      | `publicDomain` is empty and StartOS reports no address to fill it with, or the address in `publicDomain` is no longer one of the interface's | The action runs. It is not withdrawn if the address becomes available again by itself |
+
+Raising a critical task stops a running service, and clearing it does not start the service again.
+
+## Health Checks
+
+There is one check, on the `primary` daemon: it passes once something is listening on port 3000.
+
+| Check                      | Probes                             | Grace period                |
+| -------------------------- | ---------------------------------- | --------------------------- |
+| Blossom Server (`primary`) | TCP port 3000 inside the container | 10 seconds, the SDK default |
+
+The server can take longer than the grace period to open its port, so a failure shortly after a start is not a fault by itself. A failure that persists means the server never opened the port; the service log carries upstream's startup output and the reason.
+
+## Backups and Restore
+
+The whole `main` volume is copied as it is; nothing is dumped or rebuilt.
+
+That covers the blobs, the SQLite database with its `-wal` and `-shm` files, and `config.yml`. StartOS stops the service for the backup, so the database is copied at rest. Nothing is excluded.
+
+A restored instance has nothing to rebuild. Its `publicDomain` is the address it had when the backup was made; where that address does not exist, as on a different server, the Set Public Domain task is raised.
 
 ## Limitations and Differences
 
-1. **Architectures:** x86_64 and aarch64 only. riscv64 is not supported (no upstream image).
-2. **Storage backend is locked to `local`.** S3 is not exposed as a configuration option. Use the upstream image directly if you need S3.
-3. **Per-blob management is not surfaced as StartOS actions.** Browsing, search, and force-delete live in the upstream admin dashboard at `/admin`.
-4. **No total-storage cap.** Blossom has no `maxTotalBytes` setting; once the volume fills, uploads will fail at the filesystem layer. Monitor disk use through the StartOS dashboard, or use Set Retention Periods to shorten expirations.
-5. **Reports queue (BUD-09)** is operator-managed via the upstream `/admin/reports` view, not via a StartOS action.
-6. **Most Nostr clients require port 443.** StartOS assigns each service a unique high-numbered HTTPS port (e.g. `:55769`) for its LAN, `.local`, and Tor hostnames. Many Nostr clients — particularly on mobile — accept only a `https://<host>` URL with no custom port. In practice this means you'll need to attach a **clearnet custom domain** (Let's Encrypt) or **StartTunnel** to the Blossom interface so the service is reachable on the implicit `:443`. The LAN/`.local`/Tor endpoints still work for browsers and CLI clients that tolerate explicit ports.
-7. **One allowlist switch for uploads and media.** Upstream has separate switches for the upload and media endpoints. Private Mode sets both, and they are not exposed separately.
-
----
-
-## What Is Unchanged from Upstream
-
-- All BUD endpoints (`/upload`, `/mirror`, `/media`, `/list`, `/report`, `GET/HEAD /:sha256`, `DELETE /:sha256`) behave exactly as upstream documents.
-- Nostr authentication (BUD-11, kind 24242 events) is unchanged.
-- The automatic prune loop and retention rule semantics are unchanged. Thumbnails are excluded from both expiry rules and ownerless cleanup and are deleted only alongside their parent blob — verified against the upstream prune queries.
-- Image optimisation (sharp) and video transcoding (ffmpeg) defaults are unchanged, as are NIP-94 metadata tags and automatic media thumbnails (thumbnail settings live under `media.thumbnail` in `config.yml`).
-- The landing page and admin dashboard UI are upstream's, unmodified.
-- The SQLite schema is upstream's.
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development workflow.
+1. **Local storage only.** `storage.backend` is fixed to `local`, so upstream's S3 backend is unavailable.
+2. **The dashboard and the landing page are always on.** `dashboard.enabled` and `landing.enabled` are fixed to `true`.
+3. **One allowlist, for every kind of file.** Upstream can scope individual rules to particular pubkeys, for instance to give some keys longer retention. The package keeps a single allowlist, and its actions rewrite `storage.rules` to its own layout.
+4. **One switch for uploads and media.** Upstream has a separate `requirePubkeyInRule` for `/upload` and for `/media`. Private Mode sets both.
+5. **A fixed public address.** Upstream builds blob URLs from the host each request arrived on unless `publicDomain` is set. The package always sets it.
+6. **x86_64 and aarch64 only.** Upstream publishes no riscv64 image.
 
 ---
 
@@ -173,13 +151,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development wo
 
 ```yaml
 package_id: blossom-server
+image: ghcr.io/hzrd149/blossom-server
 architectures: [x86_64, aarch64]
+subcontainers: [blossom-sub]
 volumes:
-  main: /app/data + /app/config.yml
-ports:
-  ui: 3000
+  main: /app/data (subpath data), /app/config.yml (subpath config.yml, read-only)
+file_models:
+  - config.yml
+startos_managed_env_vars: []
 dependencies: none
-startos_managed_env_vars: none
+interfaces:
+  primary: { type: ui, port: 3000 }
+  admin: { type: ui, port: 3000 }
 actions:
   - show-admin-credentials
   - set-admin-password
@@ -189,4 +172,10 @@ actions:
   - set-upload-limit
   - toggle-private-mode
   - toggle-ownerless-cleanup
+tasks:
+  - { action: set-admin-password, severity: critical }
+  - { action: set-allowed-pubkeys, severity: critical }
+  - { action: set-primary-url, severity: critical }
+health_checks:
+  - primary
 ```
