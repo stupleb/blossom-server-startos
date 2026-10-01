@@ -21,6 +21,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   await configYaml.read((c) => c.upload.requireAuth).const(effects)
   await configYaml.read((c) => c.list.enabled).const(effects)
   await configYaml.read((c) => c.media.enabled).const(effects)
+  await configYaml.read((c) => c.media.requirePubkeyInRule).const(effects)
   await configYaml.read((c) => c.mirror.enabled).const(effects)
 
   const mounts = sdk.Mounts.of()

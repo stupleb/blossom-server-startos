@@ -10,7 +10,7 @@ const inputSpec = InputSpec.of({
   maxSizeMb: Value.number({
     name: i18n('Max Upload Size (MB)'),
     description: i18n(
-      'Maximum blob size accepted by the upload endpoint. Enforced from the Content-Length header before any body bytes are read.',
+      'Maximum blob size accepted by the upload and mirror endpoints.',
     ),
     required: true,
     default: 2048,

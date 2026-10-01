@@ -25,7 +25,7 @@ Blossom ships in **Private Mode** — uploads are rejected unless the uploader's
 4. **(Optional) Set Retention Periods** to control how long each kind of blob is kept. Defaults: images 1 month, videos 1 week, audio 1 week, everything else 1 week.
 5. **Open the Admin Dashboard** by clicking the `/admin` interface and signing in with the credentials from step 1.
 
-If you want to run an open server (anyone with a Nostr key may upload), run the **Disable Private Mode** action after completing the steps above.
+If you want to run an open server, run the **Disable Private Mode** action after completing the steps above. Anyone who can reach the server can then upload: the landing page creates a Nostr key in the browser for visitors who have none.
 
 ## Plugging it into a Nostr client
 

@@ -31,7 +31,7 @@ const dict = {
 
   // setUploadLimit
   'Max Upload Size (MB)': 30,
-  'Maximum blob size accepted by the upload endpoint. Enforced from the Content-Length header before any body bytes are read.': 31,
+  'Maximum blob size accepted by the upload and mirror endpoints.': 31,
   'Set Max Upload Size': 32,
   'Change the maximum blob size accepted by the upload and mirror endpoints.': 33,
 

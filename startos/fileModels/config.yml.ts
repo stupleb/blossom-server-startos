@@ -83,6 +83,7 @@ const landingShape = z.object({
 const mediaShape = z.object({
   enabled: z.boolean().catch(true),
   requireAuth: z.boolean().catch(true),
+  requirePubkeyInRule: z.boolean().catch(true),
   maxSize: z
     .number()
     .int()

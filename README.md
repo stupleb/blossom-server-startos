@@ -77,7 +77,7 @@ There is no separate setup wizard. Once those tasks are done, the service is ful
 
 | StartOS-Managed (via actions or locked)                              | Upstream-Managed                              |
 | -------------------------------------------------------------------- | --------------------------------------------- |
-| `publicDomain`, `dashboard.username`/`password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule` | Per-blob deletion, per-user deletion, report review (all done in the upstream `/admin` dashboard) |
+| `publicDomain`, `dashboard.username`/`password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule`, `media.requirePubkeyInRule` | Per-blob deletion, per-user deletion, report review (all done in the upstream `/admin` dashboard) |
 | Locked values: `port: 3000`, `host: 0.0.0.0`, `storage.backend: local`, `storage.local.dir`, `database.path`, `dashboard.enabled: true`, `landing.enabled: true` | Media (BUD-05) image and video optimisation defaults, thumbnail generation settings (`media.thumbnail`), prune timing, Nostr lookup relays — edit `config.yml` directly via the StartOS file viewer if you need to change them |
 
 The on-disk `config.yml` is the single source of truth. StartOS actions write to it; the daemon restarts on every change. Keys outside the StartOS schema are preserved untouched.
@@ -107,7 +107,7 @@ Both are exposed via every enabled StartOS gateway (LAN IP, `.local`, clearnet d
 | Set Retention Periods        | Per-category expiration: Images (`image/*`), Videos (`video/*`), Audio (`audio/*`), Other (`*`).        | Four duration strings (e.g. "1 month")          |
 | Manage Allowed Pubkeys       | Hex-encoded Nostr pubkeys allowed to upload when Private Mode is on. Applied uniformly to all categories. | List of hex pubkeys (64 chars)                 |
 | Set Max Upload Size          | Change the maximum accepted blob size.                                                                 | Number (MB)                                     |
-| Enable / Disable Private Mode | Toggle `upload.requirePubkeyInRule`. Refuses to enable when the allowlist is empty.                   | None                                            |
+| Enable / Disable Private Mode | Toggle `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together, so the allowlist governs `/upload`, `/mirror` and `/media` alike. Refuses to enable when the allowlist is empty. | None                                            |
 | Enable / Disable Ownerless Cleanup | Toggle `storage.removeWhenNoOwners` — delete blobs with no remaining owners on every prune cycle. | None                                            |
 
 For per-blob operations (delete a specific blob, ban a pubkey, dismiss a report), use the upstream admin dashboard at `/admin`.
@@ -146,6 +146,7 @@ None. Blossom Server is fully standalone.
 4. **No total-storage cap.** Blossom has no `maxTotalBytes` setting; once the volume fills, uploads will fail at the filesystem layer. Monitor disk use through the StartOS dashboard, or use Set Retention Periods to shorten expirations.
 5. **Reports queue (BUD-09)** is operator-managed via the upstream `/admin/reports` view, not via a StartOS action.
 6. **Most Nostr clients require port 443.** StartOS assigns each service a unique high-numbered HTTPS port (e.g. `:55769`) for its LAN, `.local`, and Tor hostnames. Many Nostr clients — particularly on mobile — accept only a `https://<host>` URL with no custom port. In practice this means you'll need to attach a **clearnet custom domain** (Let's Encrypt) or **StartTunnel** to the Blossom interface so the service is reachable on the implicit `:443`. The LAN/`.local`/Tor endpoints still work for browsers and CLI clients that tolerate explicit ports.
+7. **One allowlist switch for uploads and media.** Upstream has separate switches for the upload and media endpoints. Private Mode sets both, and they are not exposed separately.
 
 ---
 

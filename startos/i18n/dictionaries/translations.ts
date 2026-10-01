@@ -34,7 +34,7 @@ export default {
 
     // setUploadLimit
     30: 'Tamaño máximo de subida (MB)',
-    31: 'Tamaño máximo de blob aceptado por el endpoint de subida. Se aplica a partir de la cabecera Content-Length antes de leer ningún byte del cuerpo.',
+    31: 'Tamaño máximo de blob aceptado por los endpoints de subida y de espejo.',
     32: 'Establecer tamaño máximo de subida',
     33: 'Cambia el tamaño máximo de blob aceptado por los endpoints de subida y de espejo.',
 

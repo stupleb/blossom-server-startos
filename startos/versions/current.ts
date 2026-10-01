@@ -1,21 +1,28 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
+import { configYaml } from '../fileModels/config.yml'
 
 export const current = VersionInfo.of({
-  version: '6.3.1:0',
+  version: '6.4.0:0',
   releaseNotes: {
     en_US:
-      'Update to Blossom Server 6.3.1: large duplicate re-uploads now reliably receive their success response, and range requests that extend past the end of a blob are clamped instead of failing with error 416.',
+      'Updates Blossom Server to 6.4.0. With Private Mode off, visitors can upload from the landing page without a Nostr key of their own; the landing page and admin dashboard serve their styles from your server, and mirroring from private network addresses is refused.',
     es_ES:
-      'Actualización a Blossom Server 6.3.1: las resubidas duplicadas grandes ahora reciben su respuesta de éxito de forma fiable, y las solicitudes de rango que exceden el final de un blob se ajustan en lugar de fallar con el error 416.',
+      'Actualiza Blossom Server a 6.4.0. Con el modo privado desactivado, los visitantes pueden subir contenido desde la página de inicio sin una clave Nostr propia; la página de inicio y el panel de administración sirven sus estilos desde el propio servidor, y se rechazan las solicitudes de espejo desde direcciones de red privadas.',
     de_DE:
-      'Aktualisierung auf Blossom Server 6.3.1: große doppelte erneute Uploads erhalten jetzt zuverlässig ihre Erfolgsantwort, und Range-Anfragen über das Ende eines Blobs hinaus werden begrenzt statt mit Fehler 416 abgelehnt.',
+      'Aktualisiert Blossom Server auf 6.4.0. Ist „Private Mode“ deaktiviert, können Besucher über die Startseite ohne eigenen Nostr-Schlüssel hochladen; Startseite und Admin-Dashboard liefern ihre Stylesheets vom eigenen Server, und das Spiegeln von privaten Netzwerkadressen wird abgelehnt.',
     pl_PL:
-      'Aktualizacja do Blossom Server 6.3.1: duże ponowne przesłania duplikatów niezawodnie otrzymują teraz odpowiedź o powodzeniu, a żądania zakresu wykraczające poza koniec bloba są przycinane zamiast kończyć się błędem 416.',
+      'Aktualizuje Blossom Server do wersji 6.4.0. Gdy „Private Mode” jest wyłączony, odwiedzający mogą przesyłać pliki ze strony głównej bez własnego klucza Nostr; strona główna i panel administracyjny serwują swoje style z własnego serwera, a tworzenie kopii lustrzanych z prywatnych adresów sieciowych jest odrzucane.',
     fr_FR:
-      "Mise à jour vers Blossom Server 6.3.1 : les renvois de doublons volumineux reçoivent désormais leur réponse de succès de manière fiable, et les requêtes de plage dépassant la fin d'un blob sont tronquées au lieu d'échouer avec l'erreur 416.",
+      "Met à jour Blossom Server vers la version 6.4.0. Lorsque « Private Mode » est désactivé, les visiteurs peuvent téléverser depuis la page d'accueil sans clé Nostr personnelle ; la page d'accueil et le tableau de bord d'administration servent leurs styles depuis le serveur lui-même, et la mise en miroir depuis des adresses de réseau privé est refusée.",
   },
   migrations: {
-    up: async ({ effects }) => {},
+    up: async ({ effects }) => {
+      const requirePubkeyInRule = await configYaml
+        .read((c) => c.upload.requirePubkeyInRule)
+        .once()
+      if (requirePubkeyInRule !== null)
+        await configYaml.merge(effects, { media: { requirePubkeyInRule } })
+    },
     down: IMPOSSIBLE,
   },
 })

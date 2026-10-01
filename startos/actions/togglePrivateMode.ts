@@ -62,6 +62,7 @@ export const togglePrivateMode = sdk.Action.withoutInput(
 
     await configYaml.merge(effects, {
       upload: { requirePubkeyInRule: !enabled },
+      media: { requirePubkeyInRule: !enabled },
     })
   },
 )
