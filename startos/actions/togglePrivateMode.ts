@@ -1,11 +1,6 @@
-import { configYaml } from '../fileModels/config.yml'
+import { allowlistOf, configYaml } from '../fileModels/config.yml'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-
-async function readPubkeysCount(effects: any): Promise<number> {
-  const rules = (await configYaml.read((c) => c.storage.rules).once()) ?? []
-  return rules.find((r) => r.pubkeys && r.pubkeys.length)?.pubkeys?.length ?? 0
-}
 
 export const togglePrivateMode = sdk.Action.withoutInput(
   'toggle-private-mode',
@@ -15,7 +10,9 @@ export const togglePrivateMode = sdk.Action.withoutInput(
       (await configYaml
         .read((c) => c.upload.requirePubkeyInRule)
         .const(effects)) ?? false
-    const pubkeyCount = await readPubkeysCount(effects)
+    const hasAllowlist = !!allowlistOf(
+      (await configYaml.read((c) => c.storage.rules).const(effects)) ?? [],
+    ).length
 
     return {
       name: enabled
@@ -23,21 +20,24 @@ export const togglePrivateMode = sdk.Action.withoutInput(
         : i18n('Enable Private Mode'),
       description: enabled
         ? i18n(
-            'Private mode is currently ON — only the pubkeys in your allowlist may upload. Run this action to allow any authenticated pubkey.',
+            'Private mode is currently ON — only the pubkeys in your allowlist may upload. Run this action to allow any authenticated pubkey. Your allowlist is kept for when you turn Private Mode back on.',
           )
-        : pubkeyCount === 0
+        : hasAllowlist
           ? i18n(
-              'Private mode is currently OFF. To enable it, first add at least one pubkey via "Manage Allowed Pubkeys" — otherwise nobody will be able to upload.',
+              'Private mode is currently OFF — any authenticated Nostr pubkey may upload. Run this action to restrict uploads to your allowlist.',
             )
           : i18n(
-              'Private mode is currently OFF — any authenticated Nostr pubkey may upload. Run this action to restrict uploads to your allowlist.',
+              'Private mode is currently OFF. To enable it, first add at least one pubkey via "Manage Allowed Pubkeys" — otherwise nobody will be able to upload.',
             ),
-      warning:
-        !enabled && pubkeyCount === 0
-          ? i18n(
+      warning: enabled
+        ? i18n(
+            'Anyone who can reach this server will be able to upload files to it.',
+          )
+        : hasAllowlist
+          ? null
+          : i18n(
               'The allowed-pubkeys list is empty. Enabling Private Mode now will lock out every uploader. Add pubkeys first via "Manage Allowed Pubkeys".',
-            )
-          : null,
+            ),
       allowedStatuses: 'any',
       group: null,
       visibility: 'enabled',
@@ -49,15 +49,16 @@ export const togglePrivateMode = sdk.Action.withoutInput(
       (await configYaml.read((c) => c.upload.requirePubkeyInRule).once()) ??
       false
 
-    if (!enabled) {
-      const pubkeyCount = await readPubkeysCount(effects)
-      if (pubkeyCount === 0) {
-        throw new Error(
-          i18n(
-            'Cannot enable Private Mode: the allowed-pubkeys list is empty. Add at least one pubkey via "Manage Allowed Pubkeys" first.',
-          ),
-        )
-      }
+    if (
+      !enabled &&
+      !allowlistOf((await configYaml.read((c) => c.storage.rules).once()) ?? [])
+        .length
+    ) {
+      throw new Error(
+        i18n(
+          'Cannot enable Private Mode: the allowed-pubkeys list is empty. Add at least one pubkey via "Manage Allowed Pubkeys" first.',
+        ),
+      )
     }
 
     await configYaml.merge(effects, {

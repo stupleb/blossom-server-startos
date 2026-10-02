@@ -1,7 +1,8 @@
 import {
+  allowlistOf,
   configYaml,
-  RULE_CATEGORIES,
-  RuleCategory,
+  expirationIn,
+  rulesOf,
 } from '../fileModels/config.yml'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
@@ -48,25 +49,22 @@ export const setAllowedPubkeys = sdk.Action.withInput(
 
   inputSpec,
 
-  async ({ effects }) => {
-    const rules = (await configYaml.read((c) => c.storage.rules).once()) ?? []
-    // Pubkey lists are kept in sync across categories — read whichever has them.
-    const pubkeys = rules.find((r) => r.pubkeys && r.pubkeys.length)?.pubkeys
-    return { pubkeys: pubkeys ?? [] }
-  },
+  async ({ effects }) => ({
+    pubkeys: allowlistOf(
+      (await configYaml.read((c) => c.storage.rules).once()) ?? [],
+    ),
+  }),
 
   async ({ effects, input }) => {
-    const existing =
-      (await configYaml.read((c) => c.storage.rules).once()) ?? []
-    const expirationFor = (cat: RuleCategory) =>
-      existing.find((r) => r.type === cat)?.expiration ?? '1 week'
-
-    const newRules = RULE_CATEGORIES.map((cat) => ({
-      type: cat,
-      expiration: expirationFor(cat),
-      ...(input.pubkeys.length ? { pubkeys: input.pubkeys } : {}),
-    }))
-
-    await configYaml.merge(effects, { storage: { rules: newRules } })
+    await configYaml.merge(effects, {
+      storage: {
+        rules: rulesOf(
+          expirationIn(
+            (await configYaml.read((c) => c.storage.rules).once()) ?? [],
+          ),
+          input.pubkeys,
+        ),
+      },
+    })
   },
 )

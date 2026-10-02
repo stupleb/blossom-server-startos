@@ -1,7 +1,8 @@
 import {
+  allowlistOf,
   configYaml,
-  RULE_CATEGORIES,
   RuleCategory,
+  rulesOf,
 } from '../fileModels/config.yml'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
@@ -103,21 +104,15 @@ export const setRetentionPeriods = sdk.Action.withInput(
   },
 
   async ({ effects, input }) => {
-    const existing =
-      (await configYaml.read((c) => c.storage.rules).once()) ?? []
-    const pubkeysFor = (cat: RuleCategory) =>
-      existing.find((r) => r.type === cat)?.pubkeys
-
-    const newRules = RULE_CATEGORIES.map((cat) => {
-      const expiration = input[FIELD_FOR_CATEGORY[cat]]
-      const pubkeys = pubkeysFor(cat)
-      return {
-        type: cat,
-        expiration,
-        ...(pubkeys && pubkeys.length ? { pubkeys } : {}),
-      }
+    await configYaml.merge(effects, {
+      storage: {
+        rules: rulesOf(
+          (cat) => input[FIELD_FOR_CATEGORY[cat]],
+          allowlistOf(
+            (await configYaml.read((c) => c.storage.rules).once()) ?? [],
+          ),
+        ),
+      },
     })
-
-    await configYaml.merge(effects, { storage: { rules: newRules } })
   },
 )

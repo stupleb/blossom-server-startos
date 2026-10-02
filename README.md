@@ -67,7 +67,7 @@ On install, StartOS:
 3. Creates **three critical tasks** that you must complete before the server is usable:
    - **Set Admin Password** — the admin dashboard at `/admin` is locked until this runs.
    - **Set Public Domain** — only surfaced if no `.local` hostname was auto-pickable.
-   - **Manage Allowed Pubkeys** — Private Mode is on by default, so until you add at least one Nostr pubkey to the allowlist **nobody can upload**, including you.
+   - **Manage Allowed Pubkeys** — Private Mode is on by default, so until you add at least one Nostr pubkey to the allowlist **nobody can upload**, including you. The task is raised whenever Private Mode is on with an empty allowlist, and cleared when a pubkey is added or Private Mode is turned off.
 
 There is no separate setup wizard. Once those tasks are done, the service is fully operational. Allowing public uploads (any authenticated pubkey) requires explicitly running the **Disable Private Mode** action.
 
@@ -81,6 +81,8 @@ There is no separate setup wizard. Once those tasks are done, the service is ful
 | Locked values: `port: 3000`, `host: 0.0.0.0`, `storage.backend: local`, `storage.local.dir`, `database.path`, `dashboard.enabled: true`, `landing.enabled: true` | Media (BUD-05) image and video optimisation defaults, thumbnail generation settings (`media.thumbnail`), prune timing, Nostr lookup relays — edit `config.yml` directly via the StartOS file viewer if you need to change them |
 
 The on-disk `config.yml` is the single source of truth. StartOS actions write to it; the daemon restarts on every change. Keys outside the StartOS schema are preserved untouched.
+
+`storage.rules` holds the four retention rules, which never list pubkeys, followed by one `*` rule that carries the allowlist. Upstream consults that last rule only while `requirePubkeyInRule` is on, so the allowlist stays in place when Private Mode is off, and the retention periods apply to every blob, whoever uploaded it.
 
 ---
 
@@ -105,9 +107,9 @@ Both are exposed via every enabled StartOS gateway (LAN IP, `.local`, clearnet d
 | Set Admin Password           | Generate a new 32-char random password for the dashboard. Replaces the existing one.                   | None                                            |
 | Set Public Domain            | Choose which of your service hostnames is canonical. Used in blob descriptor URLs and BUD-11 validation. | Hostname (select from available)               |
 | Set Retention Periods        | Per-category expiration: Images (`image/*`), Videos (`video/*`), Audio (`audio/*`), Other (`*`).        | Four duration strings (e.g. "1 month")          |
-| Manage Allowed Pubkeys       | Hex-encoded Nostr pubkeys allowed to upload when Private Mode is on. Applied uniformly to all categories. | List of hex pubkeys (64 chars)                 |
+| Manage Allowed Pubkeys       | Hex-encoded Nostr pubkeys allowed to upload when Private Mode is on. The list is kept, but not applied, while Private Mode is off. | List of hex pubkeys (64 chars)                 |
 | Set Max Upload Size          | Change the maximum accepted blob size.                                                                 | Number (MB)                                     |
-| Enable / Disable Private Mode | Toggle `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together, so the allowlist governs `/upload`, `/mirror` and `/media` alike. Refuses to enable when the allowlist is empty. | None                                            |
+| Enable / Disable Private Mode | Toggle `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together, so the allowlist governs `/upload`, `/mirror` and `/media` alike. With both off, any authenticated pubkey may upload; the allowlist is left in place for the next time Private Mode is enabled. Refuses to enable when the allowlist is empty. | None                                            |
 | Enable / Disable Ownerless Cleanup | Toggle `storage.removeWhenNoOwners` — delete blobs with no remaining owners on every prune cycle. | None                                            |
 
 For per-blob operations (delete a specific blob, ban a pubkey, dismiss a report), use the upstream admin dashboard at `/admin`.
