@@ -11,25 +11,29 @@ export const watchPrimaryUrl = sdk.setupOnInit(async (effects) => {
   if (!current) {
     // First install: pick a sensible default if one exists.
     const fallback =
-      available.find((h) => h.endsWith('.local')) ?? available[0] ?? ''
+      available.find((h) => h.replace(/:\d+$/, '').endsWith('.local')) ??
+      available[0]
     if (fallback) {
       await configYaml.merge(
         effects,
         { publicDomain: fallback },
         { allowWriteAfterConst: true },
       )
-    } else {
-      await sdk.action.createOwnTask(effects, setPrimaryUrl, 'critical', {
-        reason: i18n(
-          'Choose a public domain so Blossom can build blob URLs for clients',
-        ),
-      })
+      return
     }
-  } else if (!available.includes(current)) {
-    await sdk.action.createOwnTask(effects, setPrimaryUrl, 'critical', {
-      reason: i18n(
-        'The configured public domain is no longer available. Select a new one.',
-      ),
+  }
+
+  if (current && available.includes(current)) {
+    await sdk.action.clearTask(effects, 'blossom-server:set-primary-url')
+  } else {
+    await sdk.action.createOwnTask(effects, setPrimaryUrl, 'important', {
+      reason: current
+        ? i18n(
+            'The configured public domain is no longer available. Select a new one.',
+          )
+        : i18n(
+            'Choose a public domain so Blossom can build blob URLs for clients',
+          ),
     })
   }
 })
