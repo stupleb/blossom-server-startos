@@ -27,17 +27,13 @@ export const togglePrivateMode = sdk.Action.withoutInput(
               'Private mode is currently OFF — any authenticated Nostr pubkey may upload. Run this action to restrict uploads to your allowlist.',
             )
           : i18n(
-              'Private mode is currently OFF. To enable it, first add at least one pubkey via "Manage Allowed Pubkeys" — otherwise nobody will be able to upload.',
+              'Private mode is currently OFF. Add at least one pubkey via "Manage Allowed Pubkeys" before enabling it.',
             ),
       warning: enabled
         ? i18n(
             'Anyone who can reach this server will be able to upload files to it.',
           )
-        : hasAllowlist
-          ? null
-          : i18n(
-              'The allowed-pubkeys list is empty. Enabling Private Mode now will lock out every uploader. Add pubkeys first via "Manage Allowed Pubkeys".',
-            ),
+        : null,
       allowedStatuses: 'any',
       group: null,
       visibility: 'enabled',
