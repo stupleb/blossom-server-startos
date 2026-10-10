@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '6.4.0:2',
+  version: '6.4.1:0',
   releaseNotes: {
     en_US:
-      'If the public address goes missing, Blossom keeps running and shows a Set Public Domain reminder, which clears itself once the address is back. New installs choose the .local address as their public domain.',
+      'Updates Blossom Server to 6.4.1. Stored web pages are downloaded instead of displayed, and uploads and deletes must be signed for the exact file.',
     es_ES:
-      'Si la dirección pública desaparece, Blossom sigue funcionando y muestra un recordatorio de "Establecer dominio público", que se borra solo cuando la dirección vuelve. Las instalaciones nuevas eligen la dirección .local como dominio público.',
+      'Actualiza Blossom Server a 6.4.1. Las páginas web almacenadas se descargan en lugar de mostrarse, y las subidas y eliminaciones deben firmarse para el archivo exacto.',
     de_DE:
-      'Fällt die öffentliche Adresse weg, läuft Blossom weiter und zeigt eine Erinnerung „Set Public Domain“, die von selbst verschwindet, sobald die Adresse wieder da ist. Neue Installationen wählen die .local-Adresse als öffentliche Domain.',
+      'Aktualisiert Blossom Server auf 6.4.1. Gespeicherte Webseiten werden heruntergeladen statt angezeigt, und Uploads und Löschungen müssen für genau die betreffende Datei signiert sein.',
     pl_PL:
-      'Jeśli adres publiczny zniknie, Blossom działa dalej i pokazuje przypomnienie „Set Public Domain”, które znika samo, gdy adres wróci. Nowe instalacje wybierają adres .local jako domenę publiczną.',
+      'Aktualizuje Blossom Server do wersji 6.4.1. Zapisane strony internetowe są pobierane zamiast wyświetlane, a przesyłanie i usuwanie musi być podpisane dla konkretnego pliku.',
     fr_FR:
-      "Si l'adresse publique disparaît, Blossom continue de fonctionner et affiche un rappel « Set Public Domain », qui disparaît de lui-même quand l'adresse revient. Les nouvelles installations choisissent l'adresse .local comme domaine public.",
+      "Met à jour Blossom Server vers la version 6.4.1. Les pages web stockées sont téléchargées au lieu d'être affichées, et les téléversements et suppressions doivent être signés pour le fichier exact.",
   },
   migrations: {
     up: async ({ effects }) => {},
