@@ -86,7 +86,7 @@ One HTTP listener on port 3000 serves both interfaces, so they always have the s
 Upstream has no setup wizard: it reads `config.yml` and starts. The package writes that file at install and holds the service on tasks until the operator has made the choices upstream leaves to hand-editing.
 
 1. `config.yml` is seeded with Private Mode on, the media endpoint on, and the dashboard on.
-2. `publicDomain` is filled in with the first address StartOS reports for the `primary` interface.
+2. `publicDomain` is filled in with the `primary` interface's `.local` address, or with the first address StartOS reports when it has none.
 3. Tasks are raised for what is still missing: on a fresh install, an admin password and an allowlist. See [Tasks](#tasks).
 
 The service does not start while a critical task is pending. Disable Private Mode can be run in place of adding an allowlist; it withdraws that task.
@@ -108,13 +108,13 @@ Deleting one blob, banning a key and reviewing reports are done in upstream's da
 
 ## Tasks
 
-The package raises three tasks, all critical: the service will not start while one is pending.
+The package raises three tasks. The two critical ones hold the service: it will not start while one is pending. Set Public Domain is important, so it never stops the server.
 
-| Task                   | Raised when                                                                                                                                  | Cleared when                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Set Admin Password     | `dashboard.password` is empty, as on every fresh install                                                                                     | The action runs                                                                       |
-| Manage Allowed Pubkeys | Private Mode is on and the allowlist is empty: on every fresh install, and again if the list is emptied while Private Mode is on             | The action runs, a key is added, or Private Mode is turned off                        |
-| Set Public Domain      | `publicDomain` is empty and StartOS reports no address to fill it with, or the address in `publicDomain` is no longer one of the interface's | The action runs. It is not withdrawn if the address becomes available again by itself |
+| Task                   | Severity  | Raised when                                                                                                                                             | Cleared when                                                                                                                          |
+| ---------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Set Admin Password     | critical  | `dashboard.password` is empty, as on every fresh install                                                                                                | The action runs                                                                                                                       |
+| Manage Allowed Pubkeys | critical  | Private Mode is on and the allowlist is empty: on every fresh install, and again if the list is emptied while Private Mode is on                        | The action runs, a key is added, or Private Mode is turned off                                                                        |
+| Set Public Domain      | important | `publicDomain` is empty and StartOS reports no address to fill it with, or the address in `publicDomain` is not among the interface's current addresses | The action runs, or the address is among the interface's addresses again, including when the package fills an empty `publicDomain` in |
 
 Raising a critical task stops a running service, and clearing it does not start the service again.
 
@@ -175,7 +175,7 @@ actions:
 tasks:
   - { action: set-admin-password, severity: critical }
   - { action: set-allowed-pubkeys, severity: critical }
-  - { action: set-primary-url, severity: critical }
+  - { action: set-primary-url, severity: important }
 health_checks:
   - primary
 ```
