@@ -21,3 +21,9 @@ Blossom Server is taken as upstream's published image, `ghcr.io/hzrd149/blossom-
 In `startos/manifest/index.ts`, set `dockerTag` to `ghcr.io/hzrd149/blossom-server:<new version>`.
 
 Then diff `config.example.yml` and `src/config/` between the two upstream tags. `startos/fileModels/config.yml.ts` writes a fixed set of keys into upstream's own `config.yml`, so a key upstream renames, removes, or adds with a default the package must not accept needs the file model to follow, and a migration in `startos/versions/current.ts` when existing installs are affected.
+
+`media.enabled` defaults to `true` because the image ships ffmpeg. Confirm the new image still does; if this prints nothing, set that default to `false` in `startos/fileModels/config.yml.ts`:
+
+```sh
+docker run --rm --entrypoint sh ghcr.io/hzrd149/blossom-server:<version> -c 'command -v ffmpeg'
+```

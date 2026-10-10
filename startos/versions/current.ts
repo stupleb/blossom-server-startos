@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '6.4.1:0',
+  version: '6.4.1:1',
   releaseNotes: {
     en_US:
-      'Updates Blossom Server to 6.4.1. Stored web pages are downloaded instead of displayed, and uploads and deletes must be signed for the exact file.',
+      "Requires StartOS 0.4.0.2. A brief network outage does not add Set Public Domain to the service's tasks when the public domain is the server's .local address.",
     es_ES:
-      'Actualiza Blossom Server a 6.4.1. Las páginas web almacenadas se descargan en lugar de mostrarse, y las subidas y eliminaciones deben firmarse para el archivo exacto.',
+      'Requiere StartOS 0.4.0.2. Una caída breve de la red no añade Establecer dominio público a las tareas del servicio cuando el dominio público es la dirección .local del servidor.',
     de_DE:
-      'Aktualisiert Blossom Server auf 6.4.1. Gespeicherte Webseiten werden heruntergeladen statt angezeigt, und Uploads und Löschungen müssen für genau die betreffende Datei signiert sein.',
+      'Erfordert StartOS 0.4.0.2. Ein kurzer Netzwerkausfall fügt Set Public Domain nicht zu den Aufgaben des Dienstes hinzu, wenn die öffentliche Domain die .local-Adresse des Servers ist.',
     pl_PL:
-      'Aktualizuje Blossom Server do wersji 6.4.1. Zapisane strony internetowe są pobierane zamiast wyświetlane, a przesyłanie i usuwanie musi być podpisane dla konkretnego pliku.',
+      'Wymaga StartOS 0.4.0.2. Krótka przerwa w działaniu sieci nie dodaje Set Public Domain do zadań usługi, gdy domeną publiczną jest adres .local serwera.',
     fr_FR:
-      "Met à jour Blossom Server vers la version 6.4.1. Les pages web stockées sont téléchargées au lieu d'être affichées, et les téléversements et suppressions doivent être signés pour le fichier exact.",
+      "Nécessite StartOS 0.4.0.2. Une brève coupure réseau n'ajoute pas Set Public Domain aux tâches du service lorsque le domaine public est l'adresse .local du serveur.",
   },
   migrations: {
     up: async ({ effects }) => {},

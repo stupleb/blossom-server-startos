@@ -43,8 +43,7 @@ export default {
     41: 'Desactivar modo privado',
     42: 'El modo privado está ACTIVADO actualmente — solo las pubkeys de tu lista permitida pueden subir contenido. Ejecuta esta acción para permitir cualquier pubkey autenticada. Tu lista permitida se conserva para cuando vuelvas a activar el modo privado.',
     43: 'El modo privado está DESACTIVADO actualmente — cualquier pubkey Nostr autenticada puede subir contenido. Ejecuta esta acción para restringir las subidas a tu lista permitida.',
-    44: 'El modo privado está DESACTIVADO actualmente. Para activarlo, primero añade al menos una pubkey mediante "Gestionar pubkeys permitidas" — de lo contrario nadie podrá subir contenido.',
-    45: 'La lista de pubkeys permitidas está vacía. Activar el modo privado ahora bloqueará a todos los usuarios. Añade pubkeys primero mediante "Gestionar pubkeys permitidas".',
+    44: 'El modo privado está DESACTIVADO actualmente. Añade al menos una pubkey mediante "Gestionar pubkeys permitidas" antes de activarlo.',
     46: 'No se puede activar el modo privado: la lista de pubkeys permitidas está vacía. Añade al menos una pubkey mediante "Gestionar pubkeys permitidas" primero.',
     47: 'Cualquiera que pueda acceder a este servidor podrá subir archivos a él.',
 

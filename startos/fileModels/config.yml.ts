@@ -4,9 +4,8 @@ import { sdk } from '../sdk'
 const DATA_DIR = '/app/data'
 export const BLOBS_DIR = `${DATA_DIR}/blobs`
 export const DB_PATH = `${DATA_DIR}/sqlite.db`
-export const S3_TMP_DIR = `${DATA_DIR}/s3-tmp`
 
-export const ruleShape = z.object({
+export const ruleShape = z.looseObject({
   type: z.string().catch('*'),
   expiration: z.string().catch('1 week'),
   pubkeys: z.array(z.string()).optional().catch(undefined),
@@ -22,7 +21,7 @@ export const defaultRules = [
   { type: '*', expiration: '1 week' },
 ]
 
-const localStorageShape = z.object({
+const localStorageShape = z.looseObject({
   dir: z.literal(BLOBS_DIR).catch(BLOBS_DIR),
 })
 
@@ -49,7 +48,7 @@ const storageShape = z
       }),
   )
 
-const uploadShape = z.object({
+const uploadShape = z.looseObject({
   enabled: z.boolean().catch(true),
   requireAuth: z.boolean().catch(true),
   maxSize: z
@@ -60,27 +59,27 @@ const uploadShape = z.object({
   requirePubkeyInRule: z.boolean().catch(true),
 })
 
-const mirrorShape = z.object({
+const mirrorShape = z.looseObject({
   enabled: z.boolean().catch(true),
   requireAuth: z.boolean().catch(true),
 })
 
-const deleteShape = z.object({
+const deleteShape = z.looseObject({
   requireAuth: z.boolean().catch(true),
 })
 
-const listShape = z.object({
+const listShape = z.looseObject({
   enabled: z.boolean().catch(false),
   requireAuth: z.boolean().catch(false),
   allowListOthers: z.boolean().catch(true),
 })
 
-const landingShape = z.object({
+const landingShape = z.looseObject({
   enabled: z.literal(true).catch(true),
   title: z.string().catch('Blossom Server'),
 })
 
-const mediaShape = z.object({
+const mediaShape = z.looseObject({
   enabled: z.boolean().catch(true),
   requireAuth: z.boolean().catch(true),
   requirePubkeyInRule: z.boolean().catch(true),
@@ -91,21 +90,21 @@ const mediaShape = z.object({
     .catch(1024 * 1024 * 1024),
 })
 
-const dashboardShape = z.object({
+const dashboardShape = z.looseObject({
   enabled: z.literal(true).catch(true),
   username: z.string().catch('admin'),
   password: z.string().catch(''),
 })
 
-const reportShape = z.object({
+const reportShape = z.looseObject({
   enabled: z.boolean().catch(true),
 })
 
-const databaseShape = z.object({
+const databaseShape = z.looseObject({
   path: z.literal(DB_PATH).catch(DB_PATH),
 })
 
-const shape = z.object({
+const shape = z.looseObject({
   publicDomain: z.string().catch(''),
   host: z.literal('0.0.0.0').catch('0.0.0.0'),
   port: z.literal(3000).catch(3000),
