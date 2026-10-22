@@ -32,11 +32,11 @@
 
 ## Image and Container Runtime
 
-The package runs upstream's published image, unmodified, in one subcontainer.
+The package runs upstream's published image in one subcontainer. The root `Dockerfile` adds Debian's CA store to it and sets `DENO_TLS_CA_STORE=system`, so Deno trusts that store instead of its built-in roots, which still include the compromised emSign ECC Root CA - G3. The layer is temporary and comes out once upstream ships an image on Deno 2.9.8 or later.
 
 | Property      | Value                                                                          |
 | ------------- | ------------------------------------------------------------------------------ |
-| Image         | `ghcr.io/hzrd149/blossom-server`, as upstream publishes it                     |
+| Image         | `ghcr.io/hzrd149/blossom-server` + root `Dockerfile` (CA store)                |
 | Architectures | x86_64, aarch64                                                                |
 | Entrypoint    | Upstream's, given the path of the StartOS-managed `config.yml` as its argument |
 | Subcontainer  | `blossom-sub`                                                                  |
@@ -151,7 +151,7 @@ A restored instance has nothing to rebuild. Its `publicDomain` is the address it
 
 ```yaml
 package_id: blossom-server
-image: ghcr.io/hzrd149/blossom-server
+image: ghcr.io/hzrd149/blossom-server + root Dockerfile (CA store)
 architectures: [x86_64, aarch64]
 subcontainers: [blossom-sub]
 volumes:

@@ -13,7 +13,11 @@ export const manifest = setupManifest({
   volumes: ['main'],
   images: {
     'blossom-server': {
-      source: { dockerTag: 'ghcr.io/hzrd149/blossom-server:6.4.1' },
+      source: {
+        dockerBuild: {
+          buildArgs: { IMAGE: 'ghcr.io/hzrd149/blossom-server:6.4.1' },
+        },
+      },
       arch: ['x86_64', 'aarch64'],
     },
   },

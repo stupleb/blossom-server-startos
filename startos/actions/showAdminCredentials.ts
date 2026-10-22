@@ -42,6 +42,7 @@ export const showAdminCredentials = sdk.Action.withoutInput(
             masked: false,
             copyable: true,
             qr: false,
+            launchable: false,
           },
           {
             type: 'single',
@@ -51,6 +52,7 @@ export const showAdminCredentials = sdk.Action.withoutInput(
             masked: !!password,
             copyable: !!password,
             qr: false,
+            launchable: false,
           },
         ],
       },
