@@ -23,7 +23,7 @@ The service will not start until the **Required** items in the **Tasks** table o
 3. **Set Public Domain**, if it is listed. Choose the address your Nostr clients will use to reach the server.
 4. Start the service.
 
-To run an open server, run **Disable Private Mode**; you can do this instead of step 2. Anyone who can reach the server can then upload: the landing page creates a Nostr key in the browser for visitors who have none. Your allowlist is kept while Private Mode is off, can still be edited with **Manage Allowed Pubkeys**, and applies again when you run **Enable Private Mode**.
+To run an open server, run **Disable Private Mode**; you can do this instead of step 2. Anyone who can reach the server can then upload: the landing page creates a Nostr key in the browser for visitors who have none. Anyone can also report a stored file to you, and the reports appear in the admin dashboard. While Private Mode is on, reports are refused. Your allowlist is kept while Private Mode is off, can still be edited with **Manage Allowed Pubkeys**, and applies again when you run **Enable Private Mode**.
 
 ## Using Blossom Server
 
@@ -37,7 +37,7 @@ Many Nostr clients, especially on mobile, only accept an address without a port 
 
 ### Admin dashboard
 
-Open the **Admin Dashboard** interface and sign in with the username and password from **Set Admin Password**. **Show Admin Credentials** displays them again. Deleting a single file, banning a key, and reviewing reports are all done here.
+Open the **Admin Dashboard** interface and sign in with the username and password from **Set Admin Password**. **Show Admin Credentials** displays them again. Deleting a single file, banning a key, and reviewing reports are all done here. Reports arrive only while Private Mode is off.
 
 ### Actions
 

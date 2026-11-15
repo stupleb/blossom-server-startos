@@ -9,7 +9,6 @@ export const watchPrimaryUrl = sdk.setupOnInit(async (effects) => {
   const available = await getAvailableHostnames(effects)
 
   if (!current) {
-    // First install: pick a sensible default if one exists.
     const fallback =
       available.find((h) => h.replace(/:\d+$/, '').endsWith('.local')) ??
       available[0]

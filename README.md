@@ -32,7 +32,7 @@
 
 ## Image and Container Runtime
 
-The package runs upstream's published image in one subcontainer. The root `Dockerfile` adds Debian's CA store to it and sets `DENO_TLS_CA_STORE=system`, so Deno trusts that store instead of its built-in roots, which still include the compromised emSign ECC Root CA - G3. The layer is temporary and comes out once upstream ships an image on Deno 2.9.8 or later.
+The package runs upstream's published image in one subcontainer. The root `Dockerfile` adds Debian's CA store to it and sets `DENO_TLS_CA_STORE=system`, so Deno trusts that store instead of its built-in roots, which still include the compromised emSign ECC Root CA - G3. The layer is temporary and comes out once upstream ships an image whose Deno no longer trusts that root.
 
 | Property      | Value                                                                          |
 | ------------- | ------------------------------------------------------------------------------ |
@@ -60,10 +60,10 @@ The package owns one file: upstream's own `config.yml`. It keeps no separate sto
 
 - **How it is seeded.** Every init (install, update, restore, container rebuild) merges the package's defaults into the file: a missing key gets its default, a value of the wrong type is replaced by its default, and everything else is left as found. Keys the package has no model for are kept as they are.
 - **Re-asserted on every init.** `host` (`0.0.0.0`), `port` (`3000`), `database.path`, `storage.backend` (`local`), `storage.local.dir`, `landing.enabled` (`true`) and `dashboard.enabled` (`true`). A hand edit to any of these reverts.
-- **Written by actions.** `publicDomain`, `dashboard.password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule` and `media.requirePubkeyInRule`. A hand edit survives until the matching action next runs. `publicDomain` is also filled in by the package whenever it is empty.
+- **Written by actions.** `publicDomain`, `dashboard.password`, `storage.rules`, `storage.removeWhenNoOwners`, `upload.maxSize`, `upload.requirePubkeyInRule`, `media.requirePubkeyInRule` and `report.enabled`. A hand edit survives until the matching action next runs. `publicDomain` is also filled in by the package whenever it is empty.
 - **Seeded once, then the operator's.** Everything else. A hand edit survives.
 - **How `storage.rules` is laid out.** Four retention rules (`image/*`, `video/*`, `audio/*`, `*`) that never list pubkeys, followed, when the allowlist is not empty, by one more `*` rule that carries it. Upstream consults that last rule only while `requirePubkeyInRule` is on, so the allowlist stays in the file when Private Mode is off, and the retention periods apply to every blob, whoever uploaded it. Set Retention Periods and Manage Allowed Pubkeys each rewrite the whole list to this layout, so a rule added by hand is dropped the next time either runs.
-- **Where the defaults differ from upstream's.** `upload.requirePubkeyInRule` starts `true` (Private Mode), `media.enabled` starts `true`, and the default rules add one for `audio/*`. Upstream generates and logs a dashboard password when `dashboard.password` is empty; here the service is held on a task until one is set, so that never happens.
+- **Where the defaults differ from upstream's.** `upload.requirePubkeyInRule` starts `true` (Private Mode), `report.enabled` starts `false` because it follows Private Mode, `media.enabled` starts `true`, and the default rules add one for `audio/*`. Upstream generates and logs a dashboard password when `dashboard.password` is empty; here the service is held on a task until one is set, so that never happens.
 - **When a change takes effect.** The server reads the file at startup. An action that changes it restarts the server; after a hand edit, restart the service.
 
 ## Dependencies
@@ -85,7 +85,7 @@ One HTTP listener on port 3000 serves both interfaces, so they always have the s
 
 Upstream has no setup wizard: it reads `config.yml` and starts. The package writes that file at install and holds the service on tasks until the operator has made the choices upstream leaves to hand-editing.
 
-1. `config.yml` is seeded with Private Mode on, the media endpoint on, and the dashboard on.
+1. `config.yml` is seeded with Private Mode on, the report endpoint off, the media endpoint on, and the dashboard on.
 2. `publicDomain` is filled in with the `primary` interface's `.local` address, or with the first address StartOS reports when it has none.
 3. Tasks are raised for what is still missing: on a fresh install, an admin password and an allowlist. See [Tasks](#tasks).
 
@@ -101,7 +101,7 @@ The package has eight actions, all user-facing, all runnable whether the service
 - **Set Retention Periods** (`set-retention-periods`): sets how long a blob is kept after it was last accessed, per category. It rewrites `storage.rules`, keeping the allowlist. A shorter period also applies to blobs already stored: any that are past it are deleted at the next prune cycle. Repeatable.
 - **Manage Allowed Pubkeys** (`set-allowed-pubkeys`): sets which Nostr keys may upload while Private Mode is on. It rewrites `storage.rules`, keeping the retention periods. The list can be edited while Private Mode is off and takes effect when Private Mode is turned on. Emptying it while Private Mode is on leaves a server nobody can upload to and raises the allowlist task. Repeatable.
 - **Set Max Upload Size** (`set-upload-limit`): writes `upload.maxSize`, the limit for `/upload` and `/mirror`. The media endpoint has its own limit, `media.maxSize`, which no action changes. Repeatable.
-- **Enable / Disable Private Mode** (`toggle-private-mode`): one action whose name follows the current state. It flips `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together and leaves the allowlist where it is. Off, any Nostr key may upload; on, only keys on the allowlist. Enabling is refused while the allowlist is empty. Blobs already stored are not touched either way. Each run flips the state, so running it twice returns to where it started.
+- **Enable / Disable Private Mode** (`toggle-private-mode`): one action whose name follows the current state. It flips `upload.requirePubkeyInRule` and `media.requirePubkeyInRule` together, sets `report.enabled` to the opposite, and leaves the allowlist where it is. Off, any Nostr key may upload and anyone may submit a report (`PUT /report`); on, only keys on the allowlist may upload and reports are refused. Enabling is refused while the allowlist is empty. Blobs already stored are not touched either way. Each run flips the state, so running it twice returns to where it started.
 - **Enable / Disable Ownerless Cleanup** (`toggle-ownerless-cleanup`): flips `storage.removeWhenNoOwners`. On, a blob that no key owns any longer is deleted at the next prune cycle, whatever its retention period. Each run flips the state.
 
 Deleting one blob, banning a key and reviewing reports are done in upstream's dashboard at `/admin`, not by actions.
@@ -141,7 +141,7 @@ A restored instance has nothing to rebuild. Its `publicDomain` is the address it
 1. **Local storage only.** `storage.backend` is fixed to `local`, so upstream's S3 backend is unavailable.
 2. **The dashboard and the landing page are always on.** `dashboard.enabled` and `landing.enabled` are fixed to `true`.
 3. **One allowlist, for every kind of file.** Upstream can scope individual rules to particular pubkeys, for instance to give some keys longer retention. The package keeps a single allowlist, and its actions rewrite `storage.rules` to its own layout.
-4. **One switch for uploads and media.** Upstream has a separate `requirePubkeyInRule` for `/upload` and for `/media`. Private Mode sets both.
+4. **One switch for uploads, media and reports.** Upstream has a separate `requirePubkeyInRule` for `/upload` and for `/media`, and a separate `report.enabled`. Private Mode sets all three: the report endpoint takes a signed report from any Nostr key, so it is open exactly when uploads are.
 5. **A fixed public address.** Upstream builds blob URLs from the host each request arrived on unless `publicDomain` is set. The package always sets it.
 6. **x86_64 and aarch64 only.** Upstream publishes no riscv64 image.
 
