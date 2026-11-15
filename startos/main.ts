@@ -10,7 +10,6 @@ const CONFIG_MOUNT = `${APP_DIR}/config.yml`
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Blossom Server!'))
 
-  // Reactive reads — the daemon restarts when any of these change.
   await configYaml.read((c) => c.publicDomain).const(effects)
   await configYaml.read((c) => c.dashboard.password).const(effects)
   await configYaml.read((c) => c.dashboard.username).const(effects)
@@ -23,6 +22,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   await configYaml.read((c) => c.media.enabled).const(effects)
   await configYaml.read((c) => c.media.requirePubkeyInRule).const(effects)
   await configYaml.read((c) => c.mirror.enabled).const(effects)
+  await configYaml.read((c) => c.report.enabled).const(effects)
 
   const mounts = sdk.Mounts.of()
     .mountVolume({

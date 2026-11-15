@@ -25,28 +25,12 @@ const localStorageShape = z.looseObject({
   dir: z.literal(BLOBS_DIR).catch(BLOBS_DIR),
 })
 
-const storageShape = z
-  .object({
-    backend: z.literal('local').catch('local'),
-    local: localStorageShape.catch(() => localStorageShape.parse({})),
-    rules: z.array(ruleShape).catch(defaultRules),
-    removeWhenNoOwners: z.boolean().catch(false),
-  })
-  .catch(() =>
-    z
-      .object({
-        backend: z.literal('local'),
-        local: localStorageShape,
-        rules: z.array(ruleShape),
-        removeWhenNoOwners: z.boolean(),
-      })
-      .parse({
-        backend: 'local',
-        local: { dir: BLOBS_DIR },
-        rules: defaultRules,
-        removeWhenNoOwners: false,
-      }),
-  )
+const storageShape = z.looseObject({
+  backend: z.literal('local').catch('local'),
+  local: localStorageShape.catch(() => localStorageShape.parse({})),
+  rules: z.array(ruleShape).catch(defaultRules),
+  removeWhenNoOwners: z.boolean().catch(false),
+})
 
 const uploadShape = z.looseObject({
   enabled: z.boolean().catch(true),
@@ -97,7 +81,7 @@ const dashboardShape = z.looseObject({
 })
 
 const reportShape = z.looseObject({
-  enabled: z.boolean().catch(true),
+  enabled: z.boolean().catch(false),
 })
 
 const databaseShape = z.looseObject({
@@ -109,7 +93,7 @@ const shape = z.looseObject({
   host: z.literal('0.0.0.0').catch('0.0.0.0'),
   port: z.literal(3000).catch(3000),
   database: databaseShape.catch(() => databaseShape.parse({})),
-  storage: storageShape,
+  storage: storageShape.catch(() => storageShape.parse({})),
   upload: uploadShape.catch(() => uploadShape.parse({})),
   mirror: mirrorShape.catch(() => mirrorShape.parse({})),
   delete: deleteShape.catch(() => deleteShape.parse({})),
