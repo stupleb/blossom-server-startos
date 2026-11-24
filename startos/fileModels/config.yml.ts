@@ -9,12 +9,12 @@ export const ruleShape = z.looseObject({
   type: z.string().catch('*'),
   expiration: z.string().catch('1 week'),
   pubkeys: z.array(z.string()).optional().catch(undefined),
+  nip05Domains: z.array(z.string()).optional().catch(undefined),
+  enabled: z.boolean().optional().catch(undefined),
+  note: z.string().optional().catch(undefined),
 })
 
-export const RULE_CATEGORIES = ['image/*', 'video/*', 'audio/*', '*'] as const
-export type RuleCategory = (typeof RULE_CATEGORIES)[number]
-
-export const defaultRules = [
+const defaultRules = [
   { type: 'image/*', expiration: '1 month' },
   { type: 'video/*', expiration: '1 week' },
   { type: 'audio/*', expiration: '1 week' },
@@ -54,13 +54,14 @@ const deleteShape = z.looseObject({
 
 const listShape = z.looseObject({
   enabled: z.boolean().catch(false),
-  requireAuth: z.boolean().catch(false),
-  allowListOthers: z.boolean().catch(true),
+  requireAuth: z.literal(true).catch(true),
+  allowListOthers: z.literal(false).catch(false),
 })
 
 const landingShape = z.looseObject({
   enabled: z.literal(true).catch(true),
   title: z.string().catch('Blossom Server'),
+  showStats: z.boolean().catch(true),
 })
 
 const mediaShape = z.looseObject({
@@ -84,6 +85,11 @@ const reportShape = z.looseObject({
   enabled: z.boolean().catch(false),
 })
 
+const networkShape = z.looseObject({
+  trustedProxies: z.array(z.string()).catch([]),
+  clientIpHeader: z.literal('x-forwarded-for').catch('x-forwarded-for'),
+})
+
 const databaseShape = z.looseObject({
   path: z.literal(DB_PATH).catch(DB_PATH),
 })
@@ -102,6 +108,7 @@ const shape = z.looseObject({
   media: mediaShape.catch(() => mediaShape.parse({})),
   dashboard: dashboardShape.catch(() => dashboardShape.parse({})),
   report: reportShape.catch(() => reportShape.parse({})),
+  network: networkShape.catch(() => networkShape.parse({})),
 })
 
 export const configYaml = FileHelper.yaml(
@@ -111,19 +118,13 @@ export const configYaml = FileHelper.yaml(
 
 export type StorageRule = z.infer<typeof ruleShape>
 
-export const allowlistOf = (rules: StorageRule[]) =>
-  rules.find((r) => r.pubkeys?.length)?.pubkeys ?? []
+export const ALLOWLIST_NOTE =
+  'Allowed pubkeys: edited by the Manage Allowed Pubkeys action in StartOS'
 
-export const expirationIn = (rules: StorageRule[]) => (cat: RuleCategory) =>
-  rules.find((r) => r.type === cat)?.expiration ?? '1 week'
+export const isAllowlist = (rule: StorageRule) => rule.note === ALLOWLIST_NOTE
 
-// upstream skips a rule that lists pubkeys for every other key, at upload and at prune, so the allowlist gets a rule of its own
-export const rulesOf = (
-  expirationOf: (cat: RuleCategory) => string,
-  pubkeys: string[],
-) => [
-  ...RULE_CATEGORIES.map((type) => ({ type, expiration: expirationOf(type) })),
-  ...(pubkeys.length
-    ? [{ type: '*', expiration: expirationOf('*'), pubkeys }]
-    : []),
-]
+export const hasAllowlist = (rules: StorageRule[]) =>
+  rules.some(
+    (r) =>
+      r.enabled !== false && !!(r.pubkeys?.length || r.nip05Domains?.length),
+  )

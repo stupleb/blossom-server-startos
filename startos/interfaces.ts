@@ -26,7 +26,7 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     name: i18n('Admin Dashboard'),
     id: 'admin',
     description: i18n(
-      'Operator dashboard for browsing blobs, managing users, and reviewing reports. Protected by HTTP Basic Auth.',
+      'Operator dashboard for browsing blobs, editing storage rules, managing users, and reviewing reports. Protected by HTTP Basic Auth.',
     ),
     type: 'ui',
     masked: false,

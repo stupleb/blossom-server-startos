@@ -1,13 +1,25 @@
+import { bech32 } from '@scure/base'
 import {
-  allowlistOf,
+  ALLOWLIST_NOTE,
   configYaml,
-  expirationIn,
-  rulesOf,
+  isAllowlist,
 } from '../fileModels/config.yml'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
 const { InputSpec, Value, List } = sdk
+
+const toHex = (key: string) =>
+  key.startsWith('npub1')
+    ? Buffer.from(
+        bech32.fromWords(bech32.decode(key as `npub1${string}`).words),
+      ).toString('hex')
+    : key
+
+const toNpub = (hex: string) =>
+  /^[0-9a-f]{64}$/.test(hex)
+    ? bech32.encode('npub', bech32.toWords(Buffer.from(hex, 'hex')))
+    : hex
 
 const inputSpec = InputSpec.of({
   pubkeys: Value.list(
@@ -15,16 +27,16 @@ const inputSpec = InputSpec.of({
       {
         name: i18n('Allowed Pubkeys'),
         description: i18n(
-          'Hex-encoded Nostr public keys that are permitted to upload when Private Mode is on. Go to https://damus.io/key/ to convert an npub to hex. Leave empty to remove the allowlist.',
+          'Nostr public keys permitted to upload when Private Mode is on, as npub or hex. Leave empty to remove the list.',
         ),
       },
       {
-        placeholder: 'hex pubkey (not npub)',
+        placeholder: 'npub1…',
         patterns: [
           {
-            regex: '^[0-9a-f]{64}$',
+            regex: '^(npub1[02-9ac-hj-np-z]{58}|[0-9a-f]{64})$',
             description: i18n(
-              '64 lowercase hex characters (0–9, a–f). Use damus.io/key/ to convert from npub.',
+              'An npub, or 64 lowercase hex characters (0–9, a–f).',
             ),
           },
         ],
@@ -39,7 +51,7 @@ export const setAllowedPubkeys = sdk.Action.withInput(
   async () => ({
     name: i18n('Manage Allowed Pubkeys'),
     description: i18n(
-      'Edit the list of Nostr pubkeys allowed to upload when Private Mode is on. The list applies uniformly to all retention categories.',
+      'Edit the list of Nostr pubkeys allowed to upload when Private Mode is on. Rules added in the admin dashboard are left as they are.',
     ),
     warning: null,
     allowedStatuses: 'any',
@@ -50,20 +62,39 @@ export const setAllowedPubkeys = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => ({
-    pubkeys: allowlistOf(
-      (await configYaml.read((c) => c.storage.rules).once()) ?? [],
-    ),
+    pubkeys: (
+      (await configYaml
+        .read((c) => c.storage.rules.find(isAllowlist)?.pubkeys)
+        .once()) ?? []
+    ).map(toNpub),
   }),
 
   async ({ effects, input }) => {
+    const pubkeys = [...new Set(input.pubkeys.map(toHex))]
+    const rules = (await configYaml.read((c) => c.storage.rules).once()) ?? []
+    const current = rules.find(isAllowlist)
     await configYaml.merge(effects, {
       storage: {
-        rules: rulesOf(
-          expirationIn(
-            (await configYaml.read((c) => c.storage.rules).once()) ?? [],
-          ),
-          input.pubkeys,
-        ),
+        rules: !current
+          ? pubkeys.length
+            ? [
+                ...rules,
+                {
+                  type: '*',
+                  expiration:
+                    rules.find((r) => r.type === '*')?.expiration ?? '1 week',
+                  pubkeys,
+                  note: ALLOWLIST_NOTE,
+                },
+              ]
+            : rules
+          : pubkeys.length || current.nip05Domains?.length
+            ? rules.map((r) =>
+                r === current
+                  ? { ...r, pubkeys: pubkeys.length ? pubkeys : undefined }
+                  : r,
+              )
+            : rules.filter((r) => r !== current),
       },
     })
   },

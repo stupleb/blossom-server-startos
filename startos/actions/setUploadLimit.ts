@@ -10,10 +10,23 @@ const inputSpec = InputSpec.of({
   maxSizeMb: Value.number({
     name: i18n('Max Upload Size (MB)'),
     description: i18n(
-      'Maximum blob size accepted by the upload and mirror endpoints.',
+      'Largest file the server stores as sent, whether uploaded or mirrored from another server.',
     ),
     required: true,
     default: 2048,
+    min: 1,
+    max: 102400,
+    step: 1,
+    integer: true,
+    units: 'MB',
+  }),
+  mediaMaxSizeMb: Value.number({
+    name: i18n('Max Size for Optimization (MB)'),
+    description: i18n(
+      'Largest file a client may send for the server to optimize before storing it, as the landing page does with "Optimize media" ticked. Optimizing a large video takes a lot of processing time.',
+    ),
+    required: true,
+    default: 1024,
     min: 1,
     max: 102400,
     step: 1,
@@ -28,7 +41,7 @@ export const setUploadLimit = sdk.Action.withInput(
   async () => ({
     name: i18n('Set Max Upload Size'),
     description: i18n(
-      'Change the maximum blob size accepted by the upload and mirror endpoints.',
+      'Change the largest file the server stores, and the largest it will optimize.',
     ),
     warning: null,
     allowedStatuses: 'any',
@@ -38,16 +51,18 @@ export const setUploadLimit = sdk.Action.withInput(
 
   inputSpec,
 
-  async ({ effects }) => {
-    const bytes =
-      (await configYaml.read((c) => c.upload.maxSize).once()) ??
-      2 * 1024 * BYTES_PER_MB
-    return { maxSizeMb: Math.round(bytes / BYTES_PER_MB) }
-  },
+  async ({ effects }) =>
+    (await configYaml
+      .read(({ upload, media }) => ({
+        maxSizeMb: Math.round(upload.maxSize / BYTES_PER_MB),
+        mediaMaxSizeMb: Math.round(media.maxSize / BYTES_PER_MB),
+      }))
+      .once()) ?? undefined,
 
   async ({ effects, input }) => {
     await configYaml.merge(effects, {
       upload: { maxSize: input.maxSizeMb * BYTES_PER_MB },
+      media: { maxSize: input.mediaMaxSizeMb * BYTES_PER_MB },
     })
   },
 )

@@ -1,4 +1,4 @@
-import { configYaml } from './fileModels/config.yml'
+import { configYaml, isAllowlist } from './fileModels/config.yml'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { uiPort } from './utils'
@@ -10,19 +10,13 @@ const CONFIG_MOUNT = `${APP_DIR}/config.yml`
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Blossom Server!'))
 
-  await configYaml.read((c) => c.publicDomain).const(effects)
-  await configYaml.read((c) => c.dashboard.password).const(effects)
-  await configYaml.read((c) => c.dashboard.username).const(effects)
-  await configYaml.read((c) => c.storage.rules).const(effects)
-  await configYaml.read((c) => c.storage.removeWhenNoOwners).const(effects)
-  await configYaml.read((c) => c.upload.maxSize).const(effects)
-  await configYaml.read((c) => c.upload.requirePubkeyInRule).const(effects)
-  await configYaml.read((c) => c.upload.requireAuth).const(effects)
-  await configYaml.read((c) => c.list.enabled).const(effects)
-  await configYaml.read((c) => c.media.enabled).const(effects)
-  await configYaml.read((c) => c.media.requirePubkeyInRule).const(effects)
-  await configYaml.read((c) => c.mirror.enabled).const(effects)
-  await configYaml.read((c) => c.report.enabled).const(effects)
+  await configYaml
+    .read(({ storage: { rules, ...storage }, ...config }) => ({
+      ...config,
+      storage,
+      allowlist: rules.find(isAllowlist),
+    }))
+    .const(effects)
 
   const mounts = sdk.Mounts.of()
     .mountVolume({
@@ -35,7 +29,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       volumeId: 'main',
       subpath: 'config.yml',
       mountpoint: CONFIG_MOUNT,
-      readonly: true,
+      readonly: false,
       type: 'file',
     })
 

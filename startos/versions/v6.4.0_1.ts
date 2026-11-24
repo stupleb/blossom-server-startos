@@ -1,11 +1,24 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import {
-  allowlistOf,
-  configYaml,
-  expirationIn,
-  RULE_CATEGORIES,
-  rulesOf,
-} from '../fileModels/config.yml'
+import { configYaml, StorageRule } from '../fileModels/config.yml'
+
+const RULE_CATEGORIES = ['image/*', 'video/*', 'audio/*', '*'] as const
+type RuleCategory = (typeof RULE_CATEGORIES)[number]
+
+const allowlistOf = (rules: StorageRule[]) =>
+  rules.find((r) => r.pubkeys?.length)?.pubkeys ?? []
+
+const expirationIn = (rules: StorageRule[]) => (cat: RuleCategory) =>
+  rules.find((r) => r.type === cat)?.expiration ?? '1 week'
+
+const rulesOf = (
+  expirationOf: (cat: RuleCategory) => string,
+  pubkeys: string[],
+) => [
+  ...RULE_CATEGORIES.map((type) => ({ type, expiration: expirationOf(type) })),
+  ...(pubkeys.length
+    ? [{ type: '*', expiration: expirationOf('*'), pubkeys }]
+    : []),
+]
 
 export const v_6_4_0_1 = VersionInfo.of({
   version: '6.4.0:1',
