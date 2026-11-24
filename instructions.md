@@ -8,7 +8,7 @@
 ## What you get on StartOS
 
 - **A Blossom server for your Nostr clients.** It accepts their uploads and serves the files back by hash.
-- **An admin dashboard** for browsing stored files, managing users, and reviewing reported content.
+- **An admin dashboard** for browsing stored files, setting how long files are kept, managing users, and reviewing reported content.
 - **Automatic clean-up.** A file that has not been accessed for a set time is deleted. You choose the time for each kind of file.
 - **Image and video optimisation** for clients that ask for it, with thumbnails for the media they upload.
 
@@ -19,7 +19,7 @@ Blossom Server starts in **Private Mode**: only the Nostr keys you list may uplo
 The service will not start until the **Required** items in the **Tasks** table on its Dashboard are done.
 
 1. **Set Admin Password.** Run it and save the password it shows. You will need it to sign in to the admin dashboard.
-2. **Manage Allowed Pubkeys.** Add the Nostr public keys that may upload, starting with your own. Keys are entered in hex; most clients show an `npub`, which <https://damus.io/key/> converts.
+2. **Manage Allowed Pubkeys.** Add the Nostr public keys that may upload, starting with your own. Paste each key as your client shows it, an `npub` or hex.
 3. **Set Public Domain**, if it is listed. Choose the address your Nostr clients will use to reach the server.
 4. Start the service.
 
@@ -37,12 +37,19 @@ Many Nostr clients, especially on mobile, only accept an address without a port 
 
 ### Admin dashboard
 
-Open the **Admin Dashboard** interface and sign in with the username and password from **Set Admin Password**. **Show Admin Credentials** displays them again. Deleting a single file, banning a key, and reviewing reports are all done here. Reports arrive only while Private Mode is off.
+Open the **Admin Dashboard** interface and sign in with the username and password from **Set Admin Password**. **Show Admin Credentials** displays them again. Deleting a single file, banning a key, reviewing reports, and setting how long files are kept are all done here.
+
+### How long files are kept
+
+Each rule on the dashboard's **Rules** page says how long one kind of file is kept. By default images are kept for a month after they were last accessed, and video, audio and everything else for a week. A file follows the first rule in the list that matches it, and a shorter period also removes files already stored that are past it.
+
+The last rule, with the note "Allowed pubkeys", holds the keys from **Manage Allowed Pubkeys**. Keep it last, and add keys with that action rather than to another rule: a rule that lists keys applies to those keys only, so other people's files that match it would no longer be accepted once Private Mode is off. Reports arrive only while Private Mode is off.
 
 ### Actions
 
-- **Set Retention Periods** sets how long images, videos, audio and other files are kept after they were last accessed. The defaults are one month for images and one week for the rest. A shorter period also removes files already stored that are past it.
-- **Set Max Upload Size** sets the largest file the server accepts as an upload.
+- **Set Max Upload Size** sets the largest file the server stores, and the largest it will optimize when a client asks it to, as the landing page does with **Optimize media** ticked. Optimizing a large video takes a lot of processing time.
+- **Enable / Disable File Listing** lets a Nostr client list the files your key uploaded, which some Blossom clients need to show them. A client can list only the files of the key it signs in with.
+- **Customize Landing Page** sets the title of the page visitors see at the server's address, and whether it shows the server's stats.
 - **Enable / Disable Ownerless Cleanup** decides whether a file is deleted as soon as nobody owns it any more, instead of waiting for its retention period.
 - **Set Admin Password** replaces the dashboard password with a newly generated one.
 

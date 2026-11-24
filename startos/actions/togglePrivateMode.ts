@@ -1,4 +1,4 @@
-import { allowlistOf, configYaml } from '../fileModels/config.yml'
+import { configYaml, hasAllowlist } from '../fileModels/config.yml'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
@@ -10,9 +10,9 @@ export const togglePrivateMode = sdk.Action.withoutInput(
       (await configYaml
         .read((c) => c.upload.requirePubkeyInRule)
         .const(effects)) ?? false
-    const hasAllowlist = !!allowlistOf(
-      (await configYaml.read((c) => c.storage.rules).const(effects)) ?? [],
-    ).length
+    const allowlisted = await configYaml
+      .read((c) => hasAllowlist(c.storage.rules))
+      .const(effects)
 
     return {
       name: enabled
@@ -22,7 +22,7 @@ export const togglePrivateMode = sdk.Action.withoutInput(
         ? i18n(
             'Private mode is currently ON — only the pubkeys in your allowlist may upload, and reports are refused. Run this action to allow any authenticated pubkey and accept reports from anyone. Your allowlist is kept for when you turn Private Mode back on.',
           )
-        : hasAllowlist
+        : allowlisted
           ? i18n(
               'Private mode is currently OFF — any authenticated Nostr pubkey may upload, and anyone may report a stored file. Run this action to restrict uploads to your allowlist and refuse reports.',
             )
@@ -47,8 +47,7 @@ export const togglePrivateMode = sdk.Action.withoutInput(
 
     if (
       !enabled &&
-      !allowlistOf((await configYaml.read((c) => c.storage.rules).once()) ?? [])
-        .length
+      !(await configYaml.read((c) => hasAllowlist(c.storage.rules)).once())
     ) {
       throw new Error(
         i18n(

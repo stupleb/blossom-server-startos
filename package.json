@@ -1,6 +1,7 @@
 {
   "name": "blossom-server-startos",
   "dependencies": {
+    "@scure/base": "2.4.0",
     "@start9labs/start-sdk": "4.1.0"
   },
   "overrides": {

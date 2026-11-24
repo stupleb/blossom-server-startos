@@ -1,28 +1,40 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { configYaml } from '../fileModels/config.yml'
+import {
+  ALLOWLIST_NOTE,
+  configYaml,
+  isAllowlist,
+} from '../fileModels/config.yml'
 
 export const current = VersionInfo.of({
-  version: '6.4.1:3',
+  version: '6.5.0:0',
   releaseNotes: {
     en_US:
-      'Requires StartOS 0.4.2. Reports about stored files are accepted only while Private Mode is off.',
+      'Blossom Server 6.5.0: retention rules are edited in the admin dashboard, which replaces Set Retention Periods. Manage Allowed Pubkeys accepts npub keys, and new actions turn on file listing, customize the landing page and limit the size of files sent for optimization.',
     es_ES:
-      'Requiere StartOS 0.4.2. Los informes sobre archivos almacenados solo se aceptan mientras el modo privado está desactivado.',
+      'Blossom Server 6.5.0: las reglas de retención se editan en el panel de administración, que sustituye a "Establecer períodos de retención". "Gestionar pubkeys permitidas" acepta claves npub, y nuevas acciones activan el listado de archivos, personalizan la página de inicio y limitan el tamaño de los archivos enviados para optimizar.',
     de_DE:
-      'Erfordert StartOS 0.4.2. Meldungen zu gespeicherten Dateien werden nur angenommen, solange der Privatmodus aus ist.',
+      'Blossom Server 6.5.0: Aufbewahrungsregeln werden im Admin-Dashboard bearbeitet, das „Aufbewahrungsfristen festlegen“ ersetzt. „Zugelassene Pubkeys verwalten“ nimmt npub-Schlüssel an, und neue Aktionen schalten die Dateiliste ein, passen die Startseite an und begrenzen die Größe von Dateien, die zur Optimierung gesendet werden.',
     pl_PL:
-      'Wymaga StartOS 0.4.2. Zgłoszenia dotyczące przechowywanych plików są przyjmowane tylko przy wyłączonym trybie prywatnym.',
+      'Blossom Server 6.5.0: reguły przechowywania edytuje się w panelu administratora, który zastępuje „Ustaw okresy retencji”. „Zarządzaj dozwolonymi kluczami publicznymi” przyjmuje klucze npub, a nowe akcje włączają listę plików, dostosowują stronę główną i ograniczają rozmiar plików wysyłanych do optymalizacji.',
     fr_FR:
-      'Nécessite StartOS 0.4.2. Les signalements de fichiers stockés ne sont acceptés que lorsque le mode privé est désactivé.',
+      "Blossom Server 6.5.0 : les règles de conservation se modifient dans le tableau de bord d'administration, qui remplace « Définir les durées de rétention ». « Gérer les pubkeys autorisées » accepte les clés npub, et de nouvelles actions activent la liste des fichiers, personnalisent la page d'accueil et limitent la taille des fichiers envoyés pour optimisation.",
   },
   migrations: {
     up: async ({ effects }) => {
-      const requirePubkeyInRule = await configYaml
-        .read((c) => c.upload.requirePubkeyInRule)
-        .once()
-      if (requirePubkeyInRule !== null)
+      const rules = await configYaml.read((c) => c.storage.rules).once()
+      const last = rules?.at(-1)
+      if (
+        rules &&
+        last?.type === '*' &&
+        last.pubkeys?.length &&
+        !rules.some(isAllowlist)
+      )
         await configYaml.merge(effects, {
-          report: { enabled: !requirePubkeyInRule },
+          storage: {
+            rules: rules.map((r) =>
+              r === last ? { ...r, note: ALLOWLIST_NOTE } : r,
+            ),
+          },
         })
     },
     down: IMPOSSIBLE,

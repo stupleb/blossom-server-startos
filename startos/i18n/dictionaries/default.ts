@@ -10,7 +10,7 @@ const dict = {
   // interfaces.ts
   'Public Blossom endpoint — accepts blob uploads, downloads, and the BUD protocol APIs. Nostr clients connect to this URL.': 4,
   'Admin Dashboard': 5,
-  'Operator dashboard for browsing blobs, managing users, and reviewing reports. Protected by HTTP Basic Auth.': 6,
+  'Operator dashboard for browsing blobs, editing storage rules, managing users, and reviewing reports. Protected by HTTP Basic Auth.': 6,
 
   // setAdminPassword + showAdminCredentials
   'Set Admin Password': 10,
@@ -31,9 +31,11 @@ const dict = {
 
   // setUploadLimit
   'Max Upload Size (MB)': 30,
-  'Maximum blob size accepted by the upload and mirror endpoints.': 31,
+  'Largest file the server stores as sent, whether uploaded or mirrored from another server.': 31,
   'Set Max Upload Size': 32,
-  'Change the maximum blob size accepted by the upload and mirror endpoints.': 33,
+  'Change the largest file the server stores, and the largest it will optimize.': 33,
+  'Max Size for Optimization (MB)': 34,
+  'Largest file a client may send for the server to optimize before storing it, as the landing page does with "Optimize media" ticked. Optimizing a large video takes a lot of processing time.': 35,
 
   // togglePrivateMode
   'Enable Private Mode': 40,
@@ -50,26 +52,26 @@ const dict = {
   'Ownerless cleanup is currently ON — blobs with no remaining owners are deleted on every prune cycle, regardless of retention rules. Run this action to keep ownerless blobs.': 52,
   'Ownerless cleanup is currently OFF — blobs are only deleted when their retention rule expires, even if no Nostr user claims ownership. Run this action to also delete ownerless blobs immediately.': 53,
 
-  // setRetentionPeriods
-  Images: 60,
-  Videos: 61,
-  Audio: 62,
-  Other: 63,
-  'How long to keep image blobs (image/*) after their last access.': 64,
-  'How long to keep video blobs (video/*) after their last access.': 65,
-  'How long to keep audio blobs (audio/*) after their last access.': 66,
-  'How long to keep blobs of any other MIME type after their last access. Acts as the catch-all.': 67,
-  'Set Retention Periods': 68,
-  'Choose how long each kind of blob is kept after its last access. Blobs whose MIME type matches no category use the "Other" period.': 69,
-  'This action rewrites your retention rules to exactly four categories (Images, Videos, Audio, Other). Any custom rules edited directly in config.yml will be replaced.': 70,
-  'Format: "<number> <unit>" where unit is seconds, minutes, hours, days, weeks, months, or years. Examples: "1 week", "30 days", "1 month".': 71,
-
   // setAllowedPubkeys
   'Allowed Pubkeys': 80,
-  'Hex-encoded Nostr public keys that are permitted to upload when Private Mode is on. Go to https://damus.io/key/ to convert an npub to hex. Leave empty to remove the allowlist.': 81,
-  '64 lowercase hex characters (0–9, a–f). Use damus.io/key/ to convert from npub.': 82,
+  'Nostr public keys permitted to upload when Private Mode is on, as npub or hex. Leave empty to remove the list.': 81,
+  'An npub, or 64 lowercase hex characters (0–9, a–f).': 82,
   'Manage Allowed Pubkeys': 83,
-  'Edit the list of Nostr pubkeys allowed to upload when Private Mode is on. The list applies uniformly to all retention categories.': 84,
+  'Edit the list of Nostr pubkeys allowed to upload when Private Mode is on. Rules added in the admin dashboard are left as they are.': 84,
+
+  // toggleFileListing
+  'Enable File Listing': 100,
+  'Disable File Listing': 101,
+  'File listing is currently ON — a Nostr client signed in with a key can list the files that key uploaded. Run this action to turn it off.': 102,
+  'File listing is currently OFF. Run this action to let a Nostr client signed in with a key list the files that key uploaded. Some Blossom clients need this to show your files.': 103,
+
+  // setLandingPage
+  'Customize Landing Page': 104,
+  "Set the title of the page visitors see at this server's address, and whether it shows the server's stats.": 105,
+  Title: 106,
+  "The name shown at the top of the landing page and in the browser's tab.": 107,
+  'Show Server Stats': 108,
+  'Show how many files the server holds, the storage they use, and the uploads in the last 24 hours.': 109,
 
   // init watchers
   'Set an admin password before signing in to /admin': 90,

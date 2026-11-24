@@ -11,7 +11,7 @@ export default {
     // interfaces.ts
     4: 'Punto de acceso público de Blossom — acepta subidas y descargas de blobs y las APIs del protocolo BUD. Los clientes Nostr se conectan a esta URL.',
     5: 'Panel de administración',
-    6: 'Panel de operador para explorar blobs, gestionar usuarios y revisar informes. Protegido con autenticación HTTP básica.',
+    6: 'Panel de operador para explorar blobs, editar reglas de almacenamiento, gestionar usuarios y revisar informes. Protegido con autenticación HTTP básica.',
 
     // setAdminPassword + showAdminCredentials
     10: 'Establecer contraseña de administrador',
@@ -32,9 +32,11 @@ export default {
 
     // setUploadLimit
     30: 'Tamaño máximo de subida (MB)',
-    31: 'Tamaño máximo de blob aceptado por los endpoints de subida y de espejo.',
+    31: 'Archivo más grande que el servidor guarda tal como se envía, ya sea subido o copiado desde otro servidor.',
     32: 'Establecer tamaño máximo de subida',
-    33: 'Cambia el tamaño máximo de blob aceptado por los endpoints de subida y de espejo.',
+    33: 'Cambia el archivo más grande que guarda el servidor y el más grande que optimizará.',
+    34: 'Tamaño máximo para optimizar (MB)',
+    35: 'Archivo más grande que un cliente puede enviar para que el servidor lo optimice antes de guardarlo, como hace la página de inicio con "Optimize media" marcado. Optimizar un vídeo grande lleva mucho tiempo de procesamiento.',
 
     // togglePrivateMode
     40: 'Activar modo privado',
@@ -51,26 +53,26 @@ export default {
     52: 'La limpieza de blobs sin dueño está ACTIVADA actualmente — los blobs sin propietarios restantes se eliminan en cada ciclo de purga, independientemente de las reglas de retención. Ejecuta esta acción para conservar los blobs sin dueño.',
     53: 'La limpieza de blobs sin dueño está DESACTIVADA actualmente — los blobs solo se eliminan cuando expira su regla de retención, incluso si ningún usuario Nostr reclama la propiedad. Ejecuta esta acción para eliminar también los blobs sin dueño inmediatamente.',
 
-    // setRetentionPeriods
-    60: 'Imágenes',
-    61: 'Vídeos',
-    62: 'Audio',
-    63: 'Otros',
-    64: 'Cuánto tiempo conservar blobs de imagen (image/*) tras su último acceso.',
-    65: 'Cuánto tiempo conservar blobs de vídeo (video/*) tras su último acceso.',
-    66: 'Cuánto tiempo conservar blobs de audio (audio/*) tras su último acceso.',
-    67: 'Cuánto tiempo conservar blobs de cualquier otro tipo MIME tras su último acceso. Actúa como categoría general.',
-    68: 'Establecer períodos de retención',
-    69: 'Elige cuánto tiempo se conserva cada tipo de blob tras su último acceso. Los blobs cuyo tipo MIME no coincida con ninguna categoría usan el período "Otros".',
-    70: 'Esta acción reescribe tus reglas de retención a exactamente cuatro categorías (Imágenes, Vídeos, Audio, Otros). Cualquier regla personalizada editada directamente en config.yml será reemplazada.',
-    71: 'Formato: "<número> <unidad>" donde la unidad es second, minute, hour, day, week, month o year (en inglés, con o sin "s" final). Ejemplos: "1 week", "30 days", "1 month".',
-
     // setAllowedPubkeys
     80: 'Pubkeys permitidas',
-    81: 'Claves públicas Nostr codificadas en hexadecimal autorizadas para subir contenido cuando el modo privado está activado. Visita https://damus.io/key/ para convertir una npub a hexadecimal. Déjalo vacío para eliminar la lista.',
-    82: '64 caracteres hexadecimales en minúscula (0–9, a–f). Usa damus.io/key/ para convertir desde npub.',
+    81: 'Claves públicas Nostr autorizadas para subir contenido cuando el modo privado está activado, en formato npub o hexadecimal. Déjala vacía para eliminar la lista.',
+    82: 'Un npub, o 64 caracteres hexadecimales en minúscula (0–9, a–f).',
     83: 'Gestionar pubkeys permitidas',
-    84: 'Edita la lista de pubkeys Nostr autorizadas para subir contenido cuando el modo privado está activado. La lista se aplica de forma uniforme a todas las categorías de retención.',
+    84: 'Edita la lista de pubkeys Nostr autorizadas para subir contenido cuando el modo privado está activado. Las reglas añadidas en el panel de administración no se modifican.',
+
+    // toggleFileListing
+    100: 'Activar listado de archivos',
+    101: 'Desactivar listado de archivos',
+    102: 'El listado de archivos está ACTIVADO: un cliente Nostr que haya iniciado sesión con una clave puede listar los archivos que subió esa clave. Ejecuta esta acción para desactivarlo.',
+    103: 'El listado de archivos está DESACTIVADO. Ejecuta esta acción para que un cliente Nostr que haya iniciado sesión con una clave pueda listar los archivos que subió esa clave. Algunos clientes de Blossom lo necesitan para mostrar tus archivos.',
+
+    // setLandingPage
+    104: 'Personalizar página de inicio',
+    105: 'Establece el título de la página que ven los visitantes en la dirección de este servidor y si muestra las estadísticas del servidor.',
+    106: 'Título',
+    107: 'El nombre que aparece en la parte superior de la página de inicio y en la pestaña del navegador.',
+    108: 'Mostrar estadísticas del servidor',
+    109: 'Muestra cuántos archivos guarda el servidor, el almacenamiento que ocupan y las subidas de las últimas 24 horas.',
 
     // init watchers
     90: 'Establece una contraseña de administrador antes de iniciar sesión en /admin',
@@ -88,7 +90,7 @@ export default {
     // interfaces.ts
     4: 'Öffentlicher Blossom-Endpunkt — nimmt Blob-Uploads und -Downloads sowie die APIs des BUD-Protokolls entgegen. Nostr-Clients verbinden sich mit dieser URL.',
     5: 'Admin-Dashboard',
-    6: 'Betreiber-Dashboard zum Durchsuchen von Blobs, Verwalten von Nutzern und Prüfen von Meldungen. Geschützt durch HTTP-Basic-Auth.',
+    6: 'Betreiber-Dashboard zum Durchsuchen von Blobs, Bearbeiten von Speicherregeln, Verwalten von Nutzern und Prüfen von Meldungen. Geschützt durch HTTP-Basic-Auth.',
 
     // setAdminPassword + showAdminCredentials
     10: 'Admin-Passwort festlegen',
@@ -109,9 +111,11 @@ export default {
 
     // setUploadLimit
     30: 'Maximale Upload-Größe (MB)',
-    31: 'Maximale Blob-Größe, die die Upload- und Mirror-Endpunkte annehmen.',
+    31: 'Größte Datei, die der Server unverändert speichert, ob hochgeladen oder von einem anderen Server gespiegelt.',
     32: 'Maximale Upload-Größe festlegen',
-    33: 'Ändert die maximale Blob-Größe, die die Upload- und Mirror-Endpunkte annehmen.',
+    33: 'Ändert die größte Datei, die der Server speichert, und die größte, die er optimiert.',
+    34: 'Maximale Größe zur Optimierung (MB)',
+    35: 'Größte Datei, die ein Client senden darf, damit der Server sie vor dem Speichern optimiert, wie es die Startseite bei aktiviertem „Optimize media“ tut. Das Optimieren eines großen Videos braucht viel Rechenzeit.',
 
     // togglePrivateMode
     40: 'Privatmodus aktivieren',
@@ -128,26 +132,26 @@ export default {
     52: 'Die Bereinigung besitzerloser Blobs ist derzeit AN — Blobs ohne verbleibende Besitzer werden bei jedem Prune-Durchlauf gelöscht, unabhängig von den Aufbewahrungsregeln. Führe diese Aktion aus, um besitzerlose Blobs zu behalten.',
     53: 'Die Bereinigung besitzerloser Blobs ist derzeit AUS — Blobs werden nur gelöscht, wenn ihre Aufbewahrungsregel abläuft, auch wenn kein Nostr-Nutzer sie mehr beansprucht. Führe diese Aktion aus, um besitzerlose Blobs zusätzlich sofort zu löschen.',
 
-    // setRetentionPeriods
-    60: 'Bilder',
-    61: 'Videos',
-    62: 'Audio',
-    63: 'Sonstige',
-    64: 'Wie lange Bild-Blobs (image/*) nach dem letzten Zugriff aufbewahrt werden.',
-    65: 'Wie lange Video-Blobs (video/*) nach dem letzten Zugriff aufbewahrt werden.',
-    66: 'Wie lange Audio-Blobs (audio/*) nach dem letzten Zugriff aufbewahrt werden.',
-    67: 'Wie lange Blobs mit jedem anderen MIME-Typ nach dem letzten Zugriff aufbewahrt werden. Gilt für alles Übrige.',
-    68: 'Aufbewahrungsfristen festlegen',
-    69: 'Wähle, wie lange jede Art von Blob nach dem letzten Zugriff aufbewahrt wird. Blobs, deren MIME-Typ zu keiner Kategorie passt, verwenden die Frist für „Sonstige“.',
-    70: 'Diese Aktion schreibt deine Aufbewahrungsregeln auf genau vier Kategorien um (Bilder, Videos, Audio, Sonstige). Eigene Regeln, die direkt in config.yml bearbeitet wurden, werden ersetzt.',
-    71: 'Format: "<Zahl> <Einheit>", wobei die Einheit seconds, minutes, hours, days, weeks, months oder years ist (auf Englisch). Beispiele: "1 week", "30 days", "1 month".',
-
     // setAllowedPubkeys
     80: 'Zugelassene Pubkeys',
-    81: 'Hex-kodierte öffentliche Nostr-Schlüssel, die bei aktivem Privatmodus hochladen dürfen. Unter https://damus.io/key/ kannst du einen npub in Hex umwandeln. Leer lassen, um die Zulassungsliste zu entfernen.',
-    82: '64 hexadezimale Kleinbuchstaben (0–9, a–f). Mit damus.io/key/ wandelst du einen npub um.',
+    81: 'Öffentliche Nostr-Schlüssel, die bei aktivem Privatmodus hochladen dürfen, als npub oder Hex. Leer lassen, um die Liste zu entfernen.',
+    82: 'Ein npub oder 64 hexadezimale Kleinbuchstaben (0–9, a–f).',
     83: 'Zugelassene Pubkeys verwalten',
-    84: 'Bearbeite die Liste der Nostr-Pubkeys, die bei aktivem Privatmodus hochladen dürfen. Die Liste gilt einheitlich für alle Aufbewahrungskategorien.',
+    84: 'Bearbeite die Liste der Nostr-Pubkeys, die bei aktivem Privatmodus hochladen dürfen. Im Admin-Dashboard hinzugefügte Regeln bleiben unverändert.',
+
+    // toggleFileListing
+    100: 'Dateiliste aktivieren',
+    101: 'Dateiliste deaktivieren',
+    102: 'Die Dateiliste ist derzeit AN — ein Nostr-Client, der mit einem Schlüssel angemeldet ist, kann die Dateien auflisten, die dieser Schlüssel hochgeladen hat. Führe diese Aktion aus, um sie auszuschalten.',
+    103: 'Die Dateiliste ist derzeit AUS. Führe diese Aktion aus, damit ein Nostr-Client, der mit einem Schlüssel angemeldet ist, die Dateien auflisten kann, die dieser Schlüssel hochgeladen hat. Manche Blossom-Clients brauchen das, um deine Dateien anzuzeigen.',
+
+    // setLandingPage
+    104: 'Startseite anpassen',
+    105: 'Lege den Titel der Seite fest, die Besucher unter der Adresse dieses Servers sehen, und ob sie die Statistiken des Servers zeigt.',
+    106: 'Titel',
+    107: 'Der Name oben auf der Startseite und im Browser-Tab.',
+    108: 'Serverstatistiken anzeigen',
+    109: 'Zeigt, wie viele Dateien der Server enthält, wie viel Speicher sie belegen und die Uploads der letzten 24 Stunden.',
 
     // init watchers
     90: 'Lege ein Admin-Passwort fest, bevor du dich unter /admin anmeldest',
@@ -165,7 +169,7 @@ export default {
     // interfaces.ts
     4: 'Publiczny punkt dostępowy Blossom — przyjmuje wysyłanie i pobieranie blobów oraz API protokołu BUD. Klienty Nostr łączą się z tym adresem URL.',
     5: 'Panel administracyjny',
-    6: 'Panel operatora do przeglądania blobów, zarządzania użytkownikami i przeglądania zgłoszeń. Chroniony uwierzytelnianiem HTTP Basic.',
+    6: 'Panel operatora do przeglądania blobów, edycji reguł przechowywania, zarządzania użytkownikami i przeglądania zgłoszeń. Chroniony uwierzytelnianiem HTTP Basic.',
 
     // setAdminPassword + showAdminCredentials
     10: 'Ustaw hasło administratora',
@@ -186,9 +190,11 @@ export default {
 
     // setUploadLimit
     30: 'Maksymalny rozmiar przesyłania (MB)',
-    31: 'Maksymalny rozmiar blobu przyjmowany przez punkty końcowe przesyłania i kopii lustrzanej.',
+    31: 'Największy plik, który serwer przechowuje w postaci, w jakiej go otrzymał, przesłany lub skopiowany z innego serwera.',
     32: 'Ustaw maksymalny rozmiar przesyłania',
-    33: 'Zmienia maksymalny rozmiar blobu przyjmowany przez punkty końcowe przesyłania i kopii lustrzanej.',
+    33: 'Zmienia największy plik, który serwer przechowuje, i największy, który zoptymalizuje.',
+    34: 'Maksymalny rozmiar do optymalizacji (MB)',
+    35: 'Największy plik, który klient może wysłać, aby serwer go zoptymalizował przed zapisaniem, tak jak robi to strona główna z zaznaczonym „Optimize media”. Optymalizacja dużego filmu zajmuje dużo czasu przetwarzania.',
 
     // togglePrivateMode
     40: 'Włącz tryb prywatny',
@@ -205,26 +211,26 @@ export default {
     52: 'Czyszczenie blobów bez właściciela jest obecnie WŁĄCZONE — bloby, które nie mają już żadnego właściciela, są usuwane przy każdym cyklu czyszczenia, niezależnie od reguł retencji. Uruchom tę akcję, aby zachowywać bloby bez właściciela.',
     53: 'Czyszczenie blobów bez właściciela jest obecnie WYŁĄCZONE — bloby są usuwane dopiero po wygaśnięciu ich reguły retencji, nawet jeśli żaden użytkownik Nostr ich nie posiada. Uruchom tę akcję, aby od razu usuwać także bloby bez właściciela.',
 
-    // setRetentionPeriods
-    60: 'Obrazy',
-    61: 'Filmy',
-    62: 'Audio',
-    63: 'Inne',
-    64: 'Jak długo przechowywać bloby obrazów (image/*) od ostatniego dostępu.',
-    65: 'Jak długo przechowywać bloby filmów (video/*) od ostatniego dostępu.',
-    66: 'Jak długo przechowywać bloby audio (audio/*) od ostatniego dostępu.',
-    67: 'Jak długo przechowywać bloby każdego innego typu MIME od ostatniego dostępu. Obejmuje wszystko pozostałe.',
-    68: 'Ustaw okresy retencji',
-    69: 'Wybierz, jak długo każdy rodzaj blobu jest przechowywany od ostatniego dostępu. Bloby, których typ MIME nie pasuje do żadnej kategorii, używają okresu „Inne”.',
-    70: 'Ta akcja przepisuje reguły retencji na dokładnie cztery kategorie (Obrazy, Filmy, Audio, Inne). Własne reguły edytowane bezpośrednio w config.yml zostaną zastąpione.',
-    71: 'Format: "<liczba> <jednostka>", gdzie jednostka to seconds, minutes, hours, days, weeks, months lub years (po angielsku). Przykłady: "1 week", "30 days", "1 month".',
-
     // setAllowedPubkeys
     80: 'Dozwolone klucze publiczne',
-    81: 'Klucze publiczne Nostr w formacie szesnastkowym, które mogą przesyłać pliki przy włączonym trybie prywatnym. Na https://damus.io/key/ przekonwertujesz npub na format szesnastkowy. Pozostaw puste, aby usunąć listę dozwolonych.',
-    82: '64 małe znaki szesnastkowe (0–9, a–f). Użyj damus.io/key/, aby przekonwertować npub.',
+    81: 'Klucze publiczne Nostr, które mogą przesyłać pliki przy włączonym trybie prywatnym, jako npub lub w formacie szesnastkowym. Zostaw puste, aby usunąć listę.',
+    82: 'npub lub 64 małe znaki szesnastkowe (0–9, a–f).',
     83: 'Zarządzaj dozwolonymi kluczami publicznymi',
-    84: 'Edytuj listę kluczy publicznych Nostr, które mogą przesyłać pliki przy włączonym trybie prywatnym. Lista obowiązuje jednakowo dla wszystkich kategorii retencji.',
+    84: 'Edytuj listę kluczy publicznych Nostr, które mogą przesyłać pliki przy włączonym trybie prywatnym. Reguły dodane w panelu administratora pozostają bez zmian.',
+
+    // toggleFileListing
+    100: 'Włącz listę plików',
+    101: 'Wyłącz listę plików',
+    102: 'Lista plików jest obecnie WŁĄCZONA — klient Nostr zalogowany kluczem może wyświetlić listę plików przesłanych tym kluczem. Uruchom tę akcję, aby ją wyłączyć.',
+    103: 'Lista plików jest obecnie WYŁĄCZONA. Uruchom tę akcję, aby klient Nostr zalogowany kluczem mógł wyświetlić listę plików przesłanych tym kluczem. Niektóre klienty Blossom potrzebują tego, aby pokazać twoje pliki.',
+
+    // setLandingPage
+    104: 'Dostosuj stronę główną',
+    105: 'Ustaw tytuł strony, którą odwiedzający widzą pod adresem tego serwera, oraz to, czy pokazuje statystyki serwera.',
+    106: 'Tytuł',
+    107: 'Nazwa wyświetlana u góry strony głównej i na karcie przeglądarki.',
+    108: 'Pokaż statystyki serwera',
+    109: 'Pokazuje, ile plików przechowuje serwer, ile miejsca zajmują i ile przesłano w ciągu ostatnich 24 godzin.',
 
     // init watchers
     90: 'Ustaw hasło administratora przed zalogowaniem się do /admin',
@@ -242,7 +248,7 @@ export default {
     // interfaces.ts
     4: 'Point de terminaison Blossom public — accepte les téléversements et téléchargements de blobs ainsi que les API du protocole BUD. Les clients Nostr se connectent à cette URL.',
     5: "Tableau de bord d'administration",
-    6: "Tableau de bord de l'opérateur pour parcourir les blobs, gérer les utilisateurs et examiner les signalements. Protégé par une authentification HTTP Basic.",
+    6: "Tableau de bord de l'opérateur pour parcourir les blobs, modifier les règles de stockage, gérer les utilisateurs et examiner les signalements. Protégé par une authentification HTTP Basic.",
 
     // setAdminPassword + showAdminCredentials
     10: 'Définir le mot de passe administrateur',
@@ -263,9 +269,11 @@ export default {
 
     // setUploadLimit
     30: 'Taille maximale de téléversement (Mo)',
-    31: 'Taille maximale de blob acceptée par les points de terminaison de téléversement et de miroir.',
+    31: "Plus gros fichier que le serveur stocke tel quel, qu'il soit téléversé ou copié depuis un autre serveur.",
     32: 'Définir la taille maximale de téléversement',
-    33: 'Modifie la taille maximale de blob acceptée par les points de terminaison de téléversement et de miroir.',
+    33: "Modifie le plus gros fichier que le serveur stocke et le plus gros qu'il optimisera.",
+    34: "Taille maximale pour l'optimisation (Mo)",
+    35: "Plus gros fichier qu'un client peut envoyer pour que le serveur l'optimise avant de le stocker, comme le fait la page d'accueil lorsque « Optimize media » est coché. Optimiser une grosse vidéo demande beaucoup de temps de traitement.",
 
     // togglePrivateMode
     40: 'Activer le mode privé',
@@ -282,26 +290,26 @@ export default {
     52: "Le nettoyage des blobs sans propriétaire est actuellement ACTIVÉ — les blobs qui n'ont plus de propriétaire sont supprimés à chaque cycle de purge, quelles que soient les règles de rétention. Exécutez cette action pour conserver les blobs sans propriétaire.",
     53: "Le nettoyage des blobs sans propriétaire est actuellement DÉSACTIVÉ — les blobs ne sont supprimés qu'à l'expiration de leur règle de rétention, même si aucun utilisateur Nostr ne les possède. Exécutez cette action pour supprimer aussi immédiatement les blobs sans propriétaire.",
 
-    // setRetentionPeriods
-    60: 'Images',
-    61: 'Vidéos',
-    62: 'Audio',
-    63: 'Autres',
-    64: "Durée de conservation des blobs d'image (image/*) après leur dernier accès.",
-    65: 'Durée de conservation des blobs vidéo (video/*) après leur dernier accès.',
-    66: 'Durée de conservation des blobs audio (audio/*) après leur dernier accès.',
-    67: "Durée de conservation des blobs de tout autre type MIME après leur dernier accès. S'applique à tout le reste.",
-    68: 'Définir les durées de rétention',
-    69: 'Choisissez combien de temps chaque type de blob est conservé après son dernier accès. Les blobs dont le type MIME ne correspond à aucune catégorie utilisent la durée « Autres ».',
-    70: 'Cette action réécrit vos règles de rétention en exactement quatre catégories (Images, Vidéos, Audio, Autres). Les règles personnalisées modifiées directement dans config.yml seront remplacées.',
-    71: 'Format : "<nombre> <unité>", où l’unité est seconds, minutes, hours, days, weeks, months ou years (en anglais). Exemples : "1 week", "30 days", "1 month".',
-
     // setAllowedPubkeys
     80: 'Pubkeys autorisées',
-    81: 'Clés publiques Nostr encodées en hexadécimal autorisées à téléverser lorsque le mode privé est activé. Rendez-vous sur https://damus.io/key/ pour convertir un npub en hexadécimal. Laissez vide pour supprimer la liste autorisée.',
-    82: '64 caractères hexadécimaux en minuscules (0–9, a–f). Utilisez damus.io/key/ pour convertir un npub.',
+    81: 'Clés publiques Nostr autorisées à téléverser lorsque le mode privé est activé, au format npub ou hexadécimal. Laissez vide pour supprimer la liste.',
+    82: 'Un npub, ou 64 caractères hexadécimaux en minuscules (0–9, a–f).',
     83: 'Gérer les pubkeys autorisées',
-    84: 'Modifiez la liste des pubkeys Nostr autorisées à téléverser lorsque le mode privé est activé. La liste s’applique uniformément à toutes les catégories de rétention.',
+    84: "Modifiez la liste des pubkeys Nostr autorisées à téléverser lorsque le mode privé est activé. Les règles ajoutées dans le tableau de bord d'administration restent inchangées.",
+
+    // toggleFileListing
+    100: 'Activer la liste des fichiers',
+    101: 'Désactiver la liste des fichiers',
+    102: 'La liste des fichiers est actuellement ACTIVÉE — un client Nostr connecté avec une clé peut lister les fichiers téléversés par cette clé. Exécutez cette action pour la désactiver.',
+    103: 'La liste des fichiers est actuellement DÉSACTIVÉE. Exécutez cette action pour permettre à un client Nostr connecté avec une clé de lister les fichiers téléversés par cette clé. Certains clients Blossom en ont besoin pour afficher vos fichiers.',
+
+    // setLandingPage
+    104: "Personnaliser la page d'accueil",
+    105: "Définissez le titre de la page que les visiteurs voient à l'adresse de ce serveur, et si elle affiche les statistiques du serveur.",
+    106: 'Titre',
+    107: "Le nom affiché en haut de la page d'accueil et dans l'onglet du navigateur.",
+    108: 'Afficher les statistiques du serveur',
+    109: "Affiche combien de fichiers le serveur contient, l'espace qu'ils occupent et les téléversements des dernières 24 heures.",
 
     // init watchers
     90: 'Définissez un mot de passe administrateur avant de vous connecter à /admin',
